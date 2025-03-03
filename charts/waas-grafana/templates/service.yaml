@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-grafana-service
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-grafana-container
+  type: {{ .Values.serviceType }}
+  ports:
+    - port: 80
+      targetPort: 3000
+      {{ include "waas.nodeport" . }}
+      protocol: TCP
+      name: http

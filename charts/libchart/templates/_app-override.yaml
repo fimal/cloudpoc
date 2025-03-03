@@ -1,0 +1,50 @@
+{{/*
+read image registry from values or override for specific app
+*/}}
+{{- define "libchart.registry" }}
+  {{- $appName := .Values.global.app.name }}
+  {{- $found := false }}
+  {{- range $key, $val := .Values.global.app }}
+    {{- if eq $key $appName }}
+      {{- printf "%s" $val.image.registry }}
+      {{- $found = true }}
+    {{- end }}
+  {{- end }}
+  {{- if eq $found false }}
+    {{- printf "%s" .Values.global.app.image.registry }}
+  {{- end }}
+{{- end }}
+
+{{/*
+read image version from values or override for specific app
+*/}}
+{{- define "libchart.version" }}
+  {{- $appName := .Values.global.app.name }}
+  {{- $found := false }}
+  {{- range $key, $val := .Values.global.app }}
+    {{- if eq $key $appName }}
+      {{- printf "%s" $val.image.version }}
+      {{- $found = true }}
+    {{- end }}
+  {{- end }}
+  {{- if eq $found false }}
+    {{- printf "%s" .Values.global.app.image.version }}
+  {{- end }}
+{{- end }}
+
+{{/*
+read image pullPolicy from values or override for specific app
+*/}}
+{{- define "libchart.pullPolicy" }}
+  {{- $appName := .Values.global.app.name }}
+  {{- $found := false }}
+  {{- range $key, $val := .Values.global.app }}
+    {{- if eq $key $appName }}
+      {{- printf "%s" $val.image.pullPolicy }}
+      {{- $found = true }}
+    {{- end }}
+  {{- end }}
+  {{- if eq $found false }}
+    {{- printf "%s" .Values.global.app.image.pullPolicy }}
+  {{- end }}
+{{- end }}

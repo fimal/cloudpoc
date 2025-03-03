@@ -1,0 +1,445 @@
+{{- if .Values.enabled -}}
+
+
+{{- /* redis client tls/auth settings */}}
+{{- $tlsettings := "" }}
+{{- with .Values.tls.clients.redis -}}
+  {{- if eq .enabled true }}
+    {{- $tlsettings = "--tls"}}
+    {{- if eq .clientAuth true }}
+      {{- $tlsettings =  printf "%s --key %s --cert %s" $tlsettings .clientKey .clientCertificate }}
+    {{- end }}
+    {{- if eq .verify true }}
+      {{- $tlsettings =  printf "%s --cacert %s" $tlsettings .ca }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- $redispass := "" }}
+{{- if .Values.global.redis.security.enabled }}
+  {{- $redispass = printf "-a %s --no-auth-warning" .Values.global.redis.security.pass }}
+{{- end }}
+
+{{- $tlsettings = printf "%s %s" $tlsettings $redispass }}
+### tlsettings = {{$tlsettings}}
+
+{{- /* ip family */}}
+{{- $ip := "" }}
+{{- if .Values.global.ipv6Support }}
+  {{- $ip = "[::1]" }}
+{{- else }}
+  {{- $ip = "127.0.0.1" }}
+{{- end }}
+### ip = {{$ip}}
+
+{{- /* redis port */}}
+{{- $redisPort := .Values.global.redis.ports.serviceTargetPort | default 6379}}
+{{- $sentinelPort := .Values.global.redis.ports.sentinelTargetPort | default 5000}}
+### redis port = {{$redisPort}}
+### sentinel port = {{$sentinelPort}}
+
+{{- /* redis ping command */}}
+{{- $pingCommand := printf "/usr/local/bin/redis-cli %s -h $POD_IP -p %s ping" $tlsettings  ($redisPort | quote) }}
+{{- $sentinelPingCommand := printf "/usr/local/bin/redis-cli %s -h $POD_IP -p %s ping" $tlsettings  ($sentinelPort | quote) }}
+### ping command = {{$pingCommand}}
+### ping command = {{$sentinelPingCommand}}
+
+{{- $mode := include "waas.redis.mode" .}}
+## mode = {{$mode}}
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: waas-redis-statefulset
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  serviceName: waas-redis-headless
+  podManagementPolicy: Parallel
+  replicas: {{ include "waas.redis.replicas" . }}
+  selector:
+    matchLabels:
+      configid: waas-redis-container
+  template:
+    metadata:
+      labels:
+        configid: waas-redis-container
+        waas-prometheus-service: monitor
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      {{- if eq .Values.antiAffinity true }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: configid
+                operator: In
+                values:
+                - waas-redis-container
+            topologyKey: "kubernetes.io/hostname"
+      {{- end }}
+      containers:
+{{- /* add exporter container if set */}}
+{{ if eq .Values.exposeMetrics true }}
+      - name: exporter
+        image: {{ include "waas.image.registry" . | coalesce .Values.containers.exporter.registry }}/waas-redis-exporter{{ include "waas.image.version" . | coalesce .Values.containers.exporter.version }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: 9121
+          name: stats
+        env:
+    {{- /* redis client TLS settings */}}
+    {{- with .Values.tls.clients.redis }}
+        - name: REDIS_ADDR
+      {{- if eq .enabled true }}
+          value: rediss://{{ $ip }}:{{ $redisPort }}
+        {{- if eq .clientAuth true }}
+        - name: REDIS_EXPORTER_TLS_CLIENT_KEY_FILE
+          value: {{ .clientKey }}
+        - name: REDIS_EXPORTER_TLS_CLIENT_CERT_FILE
+          value: {{ .clientCertificate }}
+        {{- end}}
+        - name: REDIS_EXPORTER_SKIP_TLS_VERIFICATION
+          value: "true"
+        {{- if eq .verify true }}
+        - name: REDIS_EXPORTER_TLS_CA_CERT_FILE
+          value: {{ .ca }}
+        {{- else }}
+          value: "true"
+        {{- end }}
+      {{- else }}
+          value: redis://{{ $ip }}:{{ $redisPort }}
+      {{- end }}
+    {{- end }}
+        - name: REDIS_EXPORTER_INCL_SYSTEM_METRICS
+          value: "true"
+        {{- if .Values.global.redis.security.enabled }}
+        - name: REDIS_PASSWORD
+          value: {{ .Values.global.redis.security.pass }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.containers.exporter.resources | nindent 10 }}
+        {{- with .Values.containers.exporter.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+      {{- /* redis client TLS mounts */}}
+      {{- with .Values.tls.clients.redis }}
+        {{- if eq .enabled true -}}
+          {{- with .mounts}}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+{{- end }}
+      - name: redis
+        image: {{ include "waas.image.registry" . | coalesce .Values.containers.redis.registry }}/waas-redis-server{{ include "waas.image.version" . | coalesce .Values.containers.redis.version }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.global.redis.ports.serviceTargetPort | default 6379 }}
+          name: {{ .Values.global.redis.ports.appProtocol | default "tcp" }}-client
+        - containerPort: 16379
+          name: {{ .Values.global.redis.ports.gossipAppProtocol | default "tcp" }}-gossip
+        command:
+          - "/init/update-conf.sh"
+          - "redis-server"
+          - "/conf/redis.conf"
+      {{- /* redis server TLS settings */}}
+      {{- with .Values.tls.server }}
+        {{- if eq .enabled true }}
+          - "--tls-port {{ $redisPort }}"
+          - "--port 0"
+          - "--tls-cluster yes"
+          - "--tls-replication yes"
+          - "--tls-cert-file {{ .certificate}}"
+          - "--tls-key-file {{ .key }}"
+          - "--tls-ca-cert-file {{ .ca }}"
+          {{- if eq .clientAuth false }}
+          - "--tls-auth-clients no"
+          {{- end }}
+        {{- else }}
+          - "--tls-port 0"
+          - "--port {{ $redisPort }}"
+        {{- end }}
+      {{- end }}
+          {{- if eq .Values.verbosity "enabled" }}
+          - "--loglevel verbose"
+          {{- end }}
+        env:
+        - name: REDIS_TLS
+          value: {{ $tlsettings }}
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        # commented out, as it requires that redis run with privileged securityContext
+        # not sure what the benefit over init container is
+        # lifecycle:
+        #   postStart:
+        #     exec:
+        #       command:
+        #         - /bin/sh
+        #         - -c
+        #         - "echo 65535 > /proc/sys/net/core/somaxconn && echo 65535 > /proc/sys/net/ipv4/tcp_max_syn_backlog"
+        resources:
+          {{- toYaml .Values.containers.redis.resources | nindent 12 }}
+        {{- with .Values.containers.redis.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: conf
+          mountPath: /conf
+        - name: init
+          mountPath: /init
+          readOnly: false
+        - name: data
+          mountPath: /data
+          readOnly: false
+      {{- /* redis server TLS mounts */}}
+      {{- with .Values.tls.server }}
+        {{- if eq .enabled true -}}
+          {{- with .mounts}}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- /* redis client TLS mounts */}}
+      {{- with .Values.tls.clients.redis }}
+        {{- if eq .enabled true -}}
+          {{- with .mounts}}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+        livenessProbe:
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.probeInitialDelay }}
+          periodSeconds: 10
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - {{$pingCommand}}
+        readinessProbe:
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 1
+          initialDelaySeconds: {{ .Values.probeInitialDelay }}
+          periodSeconds: 5
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - {{$pingCommand}}
+        startupProbe:
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 10
+          initialDelaySeconds: {{ .Values.probeInitialDelay }}
+          periodSeconds: 15
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - {{$pingCommand}}
+{{- /* add additional container if not standalone */}}
+  {{- if ne $mode "standalone"}}
+      - name: redis-cli
+        image: {{ include "waas.image.registry" . | coalesce .Values.containers.redis.registry }}/waas-redis-server{{ include "waas.image.version" . | coalesce .Values.containers.redis.version }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        resources:
+          {{- toYaml .Values.containers.redisJob.resources | nindent 10 }}
+        {{- with .Values.containers.redisJob.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        env:
+        - name: REDIS_MODE
+          value: {{$mode}}
+        - name: REDIS_PASSWORD
+          value: {{ $redispass }}
+        - name: REDIS_MASTERS
+          value: {{ .Values.cluster.masters | quote }}
+        - name: REDIS_REPLICAS
+          value: {{ .Values.cluster.replicas | quote }}
+        - name: REDIS_WAIT_BEFORE_CHECK_CLUSTER
+          value: {{ .Values.wait_before_check_cluster | quote }}
+        - name: REDIS_WAIT_BETWEEN_CLUSTER_CHECKS
+          value: {{ .Values.wait_between_cluster_checks | quote }}
+        - name: REDIS_WAIT_FOR_CLUSTER_CREATION
+          value: {{ .Values.wait_for_cluster_creation | quote }}
+        - name: REDIS_WAIT_AFTER_ADDING_REPLICA_TO_CLUSTER
+          value: {{ .Values.wait_after_adding_replica_to_cluster | quote }}
+        - name: REDIS_WAIT_PODS_STABLE_BEFORE_CLUSTER_CREATION
+          value: {{ .Values.wait_pods_stable_before_cluster_creation | quote }}
+        - name: REDIS_WAIT_FOR_POD_PONG
+          value: {{ .Values.wait_for_pod_pong | quote }}
+        - name: REDIS_RETRIES
+          value: {{ .Values.retries | quote }}
+        - name: REDIS_TLS
+          value: {{ $tlsettings }}
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: REDIS_PORT
+          value: "{{ .Values.global.redis.ports.serviceTargetPort | default 6379 }}"
+  {{- if eq $mode "ha" }}
+    {{- $sentinelopts := ""}}
+    {{- if eq .Values.verbosity "enabled" }}
+      {{- $sentinelopts = printf "%s --loglevel verbose" $sentinelopts }} 
+    {{- end }}
+    {{- with .Values.tls.server }}
+      {{- if eq .enabled true }}
+        {{- $sentinelopts = printf "%s --tls-replication yes --tls-cert-file %s --tls-key-file %s --tls-ca-cert-file %s" $sentinelopts .certificate .key .ca }}
+        {{- if eq .clientAuth false }}
+          {{- $sentinelopts = printf "%s --tls-auth-clients no" $sentinelopts }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+        - name: SENTINEL_CMD_OPTS
+          value: "{{$sentinelopts}}"
+  {{- end }}
+        command: ["/init/redis-setup.sh"]
+        volumeMounts:
+      {{- /* redis server TLS mounts */}}
+      {{- with .Values.tls.server }}
+        {{- if eq .enabled true -}}
+          {{- with .mounts}}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- /* redis client TLS mounts */}}
+      {{- with .Values.tls.clients.redis }}
+        {{- if eq .enabled true -}}
+          {{- with .mounts}}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+        - name: init
+          mountPath: /init
+        - name: conf
+          mountPath: /conf
+        readinessProbe:
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.probeInitialDelay }}
+          periodSeconds: 5
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            {{- if eq $mode "clustered" }}
+            - stat /conf/iamready
+            {{- else if eq $mode "ha" }}
+            - {{$sentinelPingCommand}}
+            {{- end }}
+  {{- end }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- if .Values.runInitContainer }}
+      initContainers:
+        - name: init
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.init.registry }}/waas-kubectl{{ include "waas.image.version" . | coalesce .Values.containers.init.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          # Updating the kernal properties
+          command:
+          - /bin/sh
+          - -c
+          - |
+            sysctl -w net.ipv4.tcp_max_syn_backlog=65535
+            sysctl -w net.core.somaxconn=65535
+            # can't disable hugepages, ro filesystem
+            #echo never > /sys/kernel/mm/transparent_hugepage/enabled
+          resources:
+            {{- toYaml .Values.containers.init.resources | nindent 12 }}
+          {{- with .Values.containers.init.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}      
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}      
+      serviceAccountName: {{ .Values.serviceAccountName | default "waas-redis-service-account" }}
+      volumes:
+      - name: init
+        configMap:
+          name: waas-redis-init-config
+          defaultMode: 0755
+    {{- /* redis server TLS volumes */}}
+    {{- with .Values.tls.server }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* redis client TLS volumes */}}
+    {{- with .Values.tls.clients.redis }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+      {{- if not .Values.persistentStorage.data.enabled }}
+      - name: data
+        emptyDir:
+          sizeLimit: {{ .Values.persistentStorage.data.size }}
+      {{- end }}
+      {{- if not .Values.persistentStorage.cfg.enabled }}
+      - name: conf
+        emptyDir:
+          sizeLimit: {{ .Values.persistentStorage.cfg.size }}
+      {{- end }}
+  volumeClaimTemplates:
+  {{- if .Values.persistentStorage.data.enabled }}
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.persistentStorage.data.size }}
+      {{- if .Values.persistentStorage.data.className }}
+      storageClassName: {{ .Values.persistentStorage.data.className }}
+      {{- end }}
+  {{- end }}
+  {{- if .Values.persistentStorage.cfg.enabled }}
+  - metadata:
+      name: conf
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.persistentStorage.cfg.size }}
+      {{- if .Values.persistentStorage.cfg.className }}
+      storageClassName: {{ .Values.persistentStorage.cfg.className }}
+      {{- end }}
+  {{- end }}
+{{- end }}

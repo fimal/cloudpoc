@@ -1,0 +1,7 @@
+waas-enforcer:
+  configType: mapping
+  configName: waas-ext-auth-mapping
+  configNamespace: radware
+lua:
+  enforcerServiceAddress: waas-enforcer.radware.svc.cluster.local
+  backendAppUrl: sample-httpbin-service.radware.svc.cluster.local

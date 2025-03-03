@@ -1,0 +1,8 @@
+apiVersion: waas.radware.com/v1beta1
+kind: SourceGroup
+metadata:
+  name: sg-tor
+  namespace: test
+spec:
+  proxies:
+  - TOR

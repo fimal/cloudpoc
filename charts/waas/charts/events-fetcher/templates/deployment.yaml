@@ -1,0 +1,202 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true)}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-events-fetcher-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      configid: waas-events-fetcher-container
+  template:
+    metadata:
+      labels:
+        configid: waas-events-fetcher-container
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: events-fetcher
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.eventsFetcher.registry }}/waas-events-fetcher{{ include "waas.image.version" . | coalesce .Values.containers.eventsFetcher.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          env:
+            - name: LOG_LEVEL
+              value: error
+            - name: ES_TRACE
+              value: "off"
+            - name: SVC_HOSTNAME
+              value: waas-events-fetcher.{{ .Release.Namespace }}.svc
+            - name: SEARCH_RESPONSE_LIMIT
+              value: "1000"
+            - name: SEARCH_RESPONSE_TRACK
+              value: "10000"
+            - name: PORT
+              value: {{ .Values.global.eventFetcher.serviceTargetPort | default "8080" | quote  }}
+            - name: ES_HOST
+              value: "waas-elasticsearch-exposed.{{ .Release.Namespace }}.svc"
+            - name: ES_PORT
+              value: "{{ .Values.global.elasticsearch.serviceExposed.servicePort | default 443 }}"
+            - name: ES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: user
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: password
+          {{- /* TLS settings for elasticsearch client */}}
+          {{- with .Values.tls.clients.elasticsearch }}
+            {{- if eq .verify true }}
+            - name: ES_CLIENT_TLS_VERIFY
+              value: "true"
+            - name: ES_CLIENT_TLS_CA_FILE
+              value: {{ .ca | quote }}
+            {{- else }}
+            - name: ES_CLIENT_TLS_VERIFY
+              value: "false"
+            {{- end }}
+          {{- end }}
+        {{- /* TLS settings for events fetcher service */}}
+        {{- with .Values.tls.server }}
+            - name: SERVER_TLS_ENABLED
+              value: {{ .enabled | quote }}
+            - name: SERVER_TLS_CLIENT_AUTH
+              value: {{ .clientAuth | quote }}
+            - name: SERVER_TLS_VERIFY
+              value: {{ .verify | quote }}
+          {{- if eq .enabled true }}
+            - name: SERVER_TLS_CERT_FILE
+              value: {{ .certificate | quote }}
+            - name: SERVER_TLS_KEY_FILE
+              value: {{ .key | quote }}
+            {{- if eq .verify true }}
+            - name: SERVER_TLS_CA_FILE
+              value: {{ .ca | quote }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* TLS settings for events fetcher client probes */}}
+        {{- with .Values.tls.clients.eventsFetcher }}
+            - name: HC_CLIENT_TLS_ENABLED
+              value: {{ .enabled | quote }}
+            - name: HC_CLIENT_TLS_CLIENT_AUTH
+              value: {{ .clientAuth | quote }}
+            - name: HC_CLIENT_TLS_VERIFY
+              value: {{ .verify | quote }}
+          {{- if eq .enabled true }}
+            {{- if eq .clientAuth true }}
+            - name: HC_CLIENT_TLS_CERT_FILE
+              value: {{ .clientCertificate | quote }}
+            - name: HC_CLIENT_TLS_KEY_FILE
+              value: {{ .clientKey | quote }}
+            {{- end }}
+            {{- if eq .verify true }}
+            - name: HC_CLIENT_TLS_CA_FILE
+              value: {{ .ca | quote }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+          resources:
+            {{- toYaml .Values.containers.eventsFetcher.resources | nindent 12 }}
+          {{- with .Values.containers.eventsFetcher.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+        {{- /* events fetcher server TLS mounts */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* elasticsearch client TLS mounts */}}
+        {{- with .Values.tls.clients.elasticsearch }}
+          {{- if eq .verify true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* events fetcher client TLS mounts */}}
+        {{- with .Values.tls.clients.eventsFetcher }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+          readinessProbe:
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - node main/health_check.js > /dev/null 2>&1
+          livenessProbe:
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - node main/health_check.js > /dev/null 2>&1
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+    {{- /* events-fetcher server TLS volumes */}}
+    {{- with .Values.tls.server }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* elasticsearch client TLS volumes */}}
+    {{- with .Values.tls.clients.elasticsearch }}
+      {{- if eq .verify true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* events-fetcher client TLS volumes */}}
+    {{- with .Values.tls.clients.eventsFetcher }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}

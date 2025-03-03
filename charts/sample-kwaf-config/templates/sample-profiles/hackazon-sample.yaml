@@ -1,0 +1,26 @@
+{{- if and .Values.hackazon (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  hackazon-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: hackazon-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: hackazon
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: hackazon
+      hostname: '*'
+      id: hackazon-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}

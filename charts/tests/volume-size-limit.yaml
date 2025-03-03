@@ -1,0 +1,72 @@
+waas-elasticsearch:
+# Volume size limit for /tmp
+  volumeTmp:
+    sizeLimit: 1Gi
+# Volume size limit for /usr/share/elasticsearch/settings (for configuration files)
+  volumeCfg:
+    sizeLimit: 100Mi
+# Volume size limit for /usr/share/elasticsearch/logs (for gc log files)
+  volumeLogs:
+    sizeLimit: 500Mi
+
+waas-enforcer:
+# /etc/waas-config/ volume used to store bootstrap config file
+  volumeCfg:
+    sizeLimit: 10Mi
+# /logs volume used to store logs, logrotate and fluentbit configuration files
+  volumeLogs:
+    sizeLimit: 200Mi
+# volume size limit for enrich volume /enrich
+  volumeEnrich:
+    sizeLimit: 200Mi
+
+waas-gui:
+  volumeTmp:
+  # /tmp volume used to store temporary files for (htpasswd) init and gui container
+    sizeLimit: 10Mi
+  # /etc/nginx/conf.d volume to store nginx configuration
+  volumeCfg:
+    sizeLimit: 10Mi
+
+waas-logstash:
+# Volume size limit for logstash-data-volume
+  volumeData:
+    sizeLimit: 1Gi
+# Volume size limit for usr/share/logstash/settings (for settings files and jvm temp)
+  volumeCfg:
+    sizeLimit: 100Mi
+# volume size limit for enrich volume /enrich
+  volumeEnrich:
+    sizeLimit: 200Mi
+
+waas-preinstall:
+  volumeTmp:
+    sizeLimit: 10Mi
+
+waas-preupgrade:
+  volumeTmp:
+    sizeLimit: 10Mi
+
+waas-profiles-crud:
+  volumeTmp:
+    sizeLimit: 10Mi
+# volume size limit for enrich volume /enrich
+  volumeEnrich:
+    sizeLimit: 200Mi
+
+waas-redis:
+  persistentStorage:
+    cfg:
+      enabled: false
+      size: 10Mi
+
+sample-app:
+# /etc/waas-config/ volume used to store bootstrap config file
+  volumeCfg:
+    sizeLimit: 10Mi
+# /logs volume used to store logs and logrotate/fluentbit configuration files
+  volumeLogs:
+    sizeLimit: 500Mi
+# /opt/waas_aw_db volume size limit for enrich volume
+  volumeEnrich:
+    sizeLimit: 200Mi

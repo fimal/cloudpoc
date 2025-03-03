@@ -1,0 +1,103 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-redis-init-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+{{ $mode := include "waas.redis.mode" .}}
+## mode = {{$mode}}
+{{ $sentinelPort := .Values.global.redis.ports.sentinelTargetPort | default 5000 }}
+## sentinelPort = {{$sentinelPort}}
+{{- $sentinelConnect := .Values.global.redis.sentinelConnect }}
+## sentinelConnect = {{$sentinelConnect}}
+
+  update-conf.sh: |
+    #!/bin/bash
+    ## create config files from readonly templates
+    sed -e "s/@@@/$HOSTNAME/" < /init/redis.conf.tmpl > /conf/redis.conf
+    ## if ha mode set all nodes but the first to be a replicas
+    {{ if eq $mode "ha" }}
+    sed -e "s/@@@/$HOSTNAME/" < /init/sentinel.conf.tmpl > /conf/sentinel.conf
+    if echo "$HOSTNAME"| grep -Eq "^.*set-0$"; then
+      echo "first, not replicas"
+    else
+      echo "replicaof waas-redis-statefulset-0.waas-redis-headless 6379" >> /conf/redis.conf
+    fi
+    {{ end }}
+    
+    # allow debugging commands
+    echo "enable-debug-command local" >> /conf/redis.conf
+    #
+    echo "created conf file, starting up"
+    exec "$@"
+  redis.conf.tmpl: |
+    {{- if .Values.global.redis.security.enabled }}
+    requirepass {{ .Values.global.redis.security.pass }}
+    masterauth {{ .Values.global.redis.security.pass }}
+    {{- end }}
+    # AOF backup with automatic rewrite
+  {{- if .Values.persistentStorage.data.enabled }}
+    appendonly {{ if .Values.persistentStorage.data.aof.appendonly }}yes{{ else }}no{{ end }}
+  {{- else }}
+    appendonly no
+  {{- end }}
+    auto-aof-rewrite-percentage {{ .Values.persistentStorage.data.aof.rewritePercentage }}
+    auto-aof-rewrite-min-size {{ .Values.persistentStorage.data.aof.rewriteMinSize }}
+    # rdb save
+  {{- if .Values.persistentStorage.data.enabled }}
+    {{ .Values.persistentStorage.data.rdb }}
+  {{- else }}
+    save ""
+  {{- end }}
+    cluster-enabled {{ if eq $mode "clustered" }}yes{{ else }}no{{ end }}
+    cluster-require-full-coverage no
+    cluster-node-timeout 1500
+    cluster-config-file /conf/nodes.conf
+    cluster-migration-barrier 1
+    activedefrag yes
+    tcp-backlog 65535
+    dir /data
+    cluster-announce-ip @@@.waas-redis-headless
+    replica-announce-ip @@@.waas-redis-headless
+{{- if and (eq $mode "ha") }}
+  sentinel.conf.tmpl: |
+    {{- $SENTINEL_MASTER_HOST := "waas-redis-statefulset-0.waas-redis-headless" -}}
+    {{- $QUORUM := 2 -}}
+    {{- $SENTINEL_MASTER := "kwaf-master" }}
+    sentinel monitor {{$SENTINEL_MASTER}} {{$SENTINEL_MASTER_HOST}} {{ .Values.global.redis.ports.serviceTargetPort | default 6379 }} {{$QUORUM}}
+    sentinel down-after-milliseconds {{$SENTINEL_MASTER}} 5000
+    sentinel failover-timeout {{$SENTINEL_MASTER}} 20000
+    sentinel parallel-syncs {{$SENTINEL_MASTER}} 1
+    sentinel resolve-hostnames yes
+    sentinel announce-hostnames yes
+    sentinel announce-ip @@@.waas-redis-headless
+    sentinel announce-port {{$sentinelPort}}
+    ## scripts 
+  {{- if not $sentinelConnect }}
+    sentinel notification-script {{$SENTINEL_MASTER}} /init/reconfigure.sh
+    sentinel client-reconfig-script {{$SENTINEL_MASTER}} /init/reconfigure.sh
+  {{- end }}
+{{- with .Values.tls.server }}
+  {{- if eq .enabled true }}
+    tls-port {{$sentinelPort}}
+  {{- else }}
+    port {{$sentinelPort}}
+  {{- end }}
+{{- end }}
+    {{- if .Values.global.redis.security.enabled }}
+    requirepass {{ .Values.global.redis.security.pass }}
+    sentinel auth-pass {{$SENTINEL_MASTER}} {{ .Values.global.redis.security.pass }}
+    {{- end }}
+{{- end }}
+  redis-setup.sh: |-
+{{ .Files.Get "files/redis-setup.sh" | indent 4 }}
+{{- if and (eq $mode "ha") (not $sentinelConnect)}}
+  reconfigure.sh: |-
+{{ .Files.Get "files/reconfigure.sh" | indent 4 }}
+{{- end }}
+{{- end }}

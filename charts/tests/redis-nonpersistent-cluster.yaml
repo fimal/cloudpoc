@@ -1,0 +1,14 @@
+waas-redis:
+  enabled: true
+  persistentStorage:
+    cfg:
+      enabled: false
+      size: 15M
+  cluster:
+    masters: 3
+    replicas: 0
+  retries: 120
+global:
+  preserveJobs: false
+  redis:
+    configuration: clustered

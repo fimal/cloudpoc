@@ -1,0 +1,5 @@
+global:
+  kibanaCredEnabled: true
+
+waas-elasticsearch:
+  replicaCount: 3

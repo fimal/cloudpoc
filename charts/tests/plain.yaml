@@ -1,0 +1,47 @@
+waas-events-fetcher:
+  enabled: true
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      eventsFetcher:
+        enabled: false
+        mounts:
+        volumes:
+      elasticsearch:
+        verify: false
+        mounts:
+        volumes:
+
+waas-gui:
+  enabled: true
+  tls:
+    server:
+      enabled: true
+    clients:
+      eventsFetcher:
+        enabled: false
+        mounts:
+        volumes:
+      profiles:
+        enabled: false
+        mounts:
+        volumes:
+
+waas-profiles-crud:
+  enabled: true
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      profiles:
+        enabled: false
+        mounts:
+        volumes:
+
+
+

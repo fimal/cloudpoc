@@ -1,0 +1,26 @@
+{{- if and .Values.bypass (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name: bypass-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: bypass-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: bypass-sample
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: bypass-sample
+      hostname: '*'
+      id: bypass-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}

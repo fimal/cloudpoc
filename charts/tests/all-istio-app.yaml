@@ -1,0 +1,12 @@
+# Used for selecting application based on sample-istio-integration helm chart
+bwapp: true
+bypass: true
+httpbin: true
+juiceShop: true
+nginx: true
+nginxh2c: true
+grpcx: true
+hackazon: true
+perfNginx: false
+webgoat: true
+vampi: true

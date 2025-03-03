@@ -1,0 +1,17 @@
+{{- if .Values.hackazon }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-hackazon-service
+  labels:
+    waas.radware.com/sample: hackazon
+spec:
+  selector:
+    app: sample-hackazon-container
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+      protocol: TCP
+{{- end }}

@@ -1,0 +1,47 @@
+# values file used to deploy in azure
+# prerequisites:
+  # 1. install aks azure kubernetes service
+  # 2. install acr azure container registry
+  # 3. Integrate aks with acr, to allow aks to pull images from acr
+  #    az aks update -n <aks cluster name> -g <aks resource group name> --attach-acr <acrName> (see https://docs.microsoft.com/en-us/azure/aks/cluster-container-registry-integration)
+  # 4. set registry and version correctly
+  # 5. run helm install waas -n <<namespace>> ./waas -f tests/managed-k8s-providers/azure.yaml --create-namespace
+
+global:
+  image:
+    registry: <Azure ACR container registry name>
+    version: :latest
+    imagePullSecret:
+  signaturesImage:
+    registry: <Azure ACR container registry name>
+    version: :latest
+    imagePullSecret:
+  elasticStorageManagement:
+      policy: poc
+  systemMode: inline
+
+waas-elasticsearch:
+  enabled: true
+  replicaCount: 1
+  processors: 1
+  persistentStorage:
+    type: azure
+    size: 500Mi
+  # Minimum 2GB required.  
+  containers:
+    elasticsearch:
+      resources:
+        limits:
+          memory: 2G
+        requests:
+          memory: 2G  
+          
+waas-filebeat:
+  enabled: true
+
+waas-logstash:
+  enabled: true
+  replicaCount: 1
+  jvmMemorySize: 2g
+  batchSize: 100
+  workers: 2

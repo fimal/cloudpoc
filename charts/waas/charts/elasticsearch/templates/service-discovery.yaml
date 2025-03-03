@@ -1,0 +1,22 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-elasticsearch-discovery
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-elasticsearch-container
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: {{ .Values.global.elasticsearch.serviceDiscovery.appProtocol | default "https" }}-discovery
+      port: {{ .Values.global.elasticsearch.serviceDiscovery.servicePort | default 9300 }}
+      targetPort: {{ .Values.global.elasticsearch.serviceDiscovery.serviceTargetPort | default 9300 }}
+      protocol: TCP
+{{- end }}

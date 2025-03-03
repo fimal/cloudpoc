@@ -1,0 +1,17 @@
+{{- if .Values.httpbin }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-httpbin-service
+  labels:
+    waas.radware.com/sample: httpbin
+spec:
+  selector:
+    app: sample-httpbin-container
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http
+      protocol: TCP
+{{- end }}

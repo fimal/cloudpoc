@@ -1,0 +1,261 @@
+enabled: true
+
+image:
+  registry:
+  version:
+
+#runInitContainer - In order to enable running init container which configures for maximum performance:
+# net.ipv4.tcp_max_syn_backlog=65535 (default depends on memory) and net.core.somaxconn=65535 (default 128)
+runInitContainer: false
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+# persistent data configuration
+persistentStorage:
+  # persist data files
+  data:
+    # should data be placed in a pvc
+    # setting enabled: false sets rdb and aof to disabled as well
+    enabled: false
+    # if volumeClaimTemplate should include storage class name - set sotrage class name as well
+    className:
+    # if enabled == false, size limit is imposed on emptyDir used
+    size: 100Mi
+    # Save the DB to disk.
+    #
+    # save <seconds> <changes> [<seconds> <changes> ...]
+    #
+    # Redis will save the DB if the given number of seconds elapsed and it
+    # surpassed the given number of write operations against the DB.
+    #
+    # Snapshotting can be completely disabled with a single empty string argument
+    # as in following example:
+    #
+    # save ""
+    #
+    # Unless specified otherwise, by default Redis will save the DB:
+    #   * After 3600 seconds (an hour) if at least 1 change was performed
+    #   * After 300 seconds (5 minutes) if at least 100 changes were performed
+    #   * After 60 seconds if at least 10000 changes were performed
+    #
+    # You can set these explicitly by uncommenting the following line.
+    #
+    # save 3600 1 300 100 60 10000
+    rdb: save ""
+    # AOF 
+    aof:
+      # enable / disable AOF
+      appendonly: false
+      # Automatic rewrite of the append only file.
+      # Redis is able to automatically rewrite the log file implicitly calling
+      # BGREWRITEAOF when the AOF log size grows by the specified percentage.
+      #
+      # This is how it works: Redis remembers the size of the AOF file after the
+      # latest rewrite (if no rewrite has happened since the restart, the size of
+      # the AOF at startup is used).
+      #
+      # This base size is compared to the current size. If the current size is
+      # bigger than the specified percentage, the rewrite is triggered. Also
+      # you need to specify a minimal size for the AOF file to be rewritten, this
+      # is useful to avoid rewriting the AOF file even if the percentage increase
+      # is reached but it is still pretty small.
+      #
+      # Specify a percentage of zero in order to disable the automatic AOF
+      # rewrite feature.
+      rewritePercentage: 100
+      rewriteMinSize: 64mb
+  # persist configuration
+  cfg:
+    enabled: false
+    # if volumeClaimTemplate should include storage class name - set sotrage class name as well
+    className:
+    # if enabled == false, size limit is imposed on emptyDir used
+    size: 10Mi
+
+
+# control the size of the installed statefulset
+# for standalone configuration - cluster size should be 1, and replicas 0. total number of pods - 1
+# for ha - 1 master and a minimum of 2 replicas is required. total number of pods - 1+replicas
+# for clustered - at least three masters, with 0 or more replicas. total number of pods masters + masters * replicas
+# the default is a cluster with size 1 - standalone
+cluster:
+  # size of the cluster - total number of nodes (statefulset replica count)
+  masters: 1
+  # redis replicas - how many replicas should each redis master node have
+  replicas: 0
+
+# how many retries waiting for the redis nodes to become ready
+retries: 60
+
+# how many seconds waiting before checking if redis nodes are ready
+wait_before_check_cluster: 15
+
+# how many seconds waiting between redis nodes status checks
+wait_between_cluster_checks: 3
+
+# how many seconds waiting for pod response after pinging it
+wait_for_pod_pong: 2
+
+# how many seconds waiting for redis cluster creation
+wait_for_cluster_creation: 10
+
+# how many seconds waiting after adding replica pod to redis cluster
+wait_after_adding_replica_to_cluster: 2
+
+# how many seconds waiting for pods to stabilize before forming redis cluster
+wait_pods_stable_before_cluster_creation: 1
+
+# control if you want all redis pods to use anti affinity so that
+# each one of them runs on a seperate node
+antiAffinity: false
+
+# verbosity level for redis-server
+verbosity: disabled
+
+# initial delay seconds for liveness/readiness probes
+probeInitialDelay: 15
+
+# add the redis-exporter container
+exposeMetrics: true
+
+nodeSelector: {}
+tolerations: []
+
+containers:
+  exporter:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  redis:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  init:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      privileged: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 0
+      runAsGroup: 0
+      readOnlyRootFilesystem: true
+  redisJob:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+
+tls:
+  server:
+    # servers will accept HTTPS or HTTP connections
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # client authentication using client certificate may be required
+    # allowed values: true, false
+    # default value: do not require client authentication
+    clientAuth: true
+    # certificate file location, required
+    certificate: /tls/server/tls.crt
+    # key file location, required
+    key: /tls/server/tls.key
+    # ca certificate file location, not required if clientAuth=false
+    ca: /tls/server/ca/ca.crt
+    # verify server upon connection
+    # allowed values: true, false
+    # default value: verify server identity
+    verify: true
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: redis-server-volume
+        mountPath: /tls/server
+      - name: redis-ca-volume
+        mountPath: /tls/server/ca
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: redis-server-volume
+        secret:
+          secretName: waas-redis-server-secret
+      - name: redis-ca-volume
+        configMap:
+          name: waas-ca-config
+  clients:
+    redis:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /tls/client/crt/tls.crt
+      # key file location, mandatory
+      clientKey: /tls/client/crt/tls.key
+      # ca certificate file location, not mandatory
+      ca: /tls/client/ca/ca.crt
+      # verify server upn connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name: 
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: redis-client-volume
+          mountPath: /tls/client/crt
+        - name: redis-client-ca-volume
+          mountPath: /tls/client/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: redis-client-volume
+          secret:
+            secretName: waas-redis-client-secret
+        - name: redis-client-ca-volume
+          configMap:
+            name: waas-ca-config
+
+# uncomment to add extra labels to redis
+# labels:
+
+# uncomment to add extra annotations to redis
+# extraAnnotations:
+
+# redis service port name prefix to use for istio, defaults to tcp
+# global:
+#   redis:
+#     ports:
+#       appProtocol: tcp
+#       gossipAppProtocol: tcp

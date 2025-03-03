@@ -1,0 +1,3 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true)}}
+{{- template "waas.tester" . }}
+{{- end }}

@@ -1,0 +1,143 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-controller-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      configid: waas-controller-container
+  template:
+    metadata:
+      labels:
+        configid: waas-controller-container
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: controller
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.controller.registry }}/waas-controller{{ include "waas.image.version" . | coalesce .Values.containers.controller.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command:
+            - ./ctrlr
+            - -v=6
+            - --controller-server-port={{ .Values.global.controller.serviceTargetPort | default 12121 }}
+            - --rate-limiter-cache-entries-number={{ .Values.global.controller.enforcerRateLimiterCacheEntriesNumber | default 1000 }}
+            {{- if .Values.addDebugHeaders }}
+            - --add-debug-headers=true
+            {{- end }}
+            {{- if .Values.userIpHeaders }}
+            - --user-ip-headers={{.Values.userIpHeaders}}
+            {{- end }}
+            {{- if eq .Values.enforcerAccessLog false }}
+            - --enforcer-access-log={{.Values.enforcerAccessLog}}
+            {{- end }}
+            {{- if .Values.accessLogHeadersToAdd }}
+            - --access-log-headers-to-add={{.Values.accessLogHeadersToAdd}}
+            {{- end }}
+            {{- if .Values.securityLogHeadersToAdd }}
+            - --security-log-headers-to-add={{.Values.securityLogHeadersToAdd}}
+            {{- end }}
+            {{- if .Values.partialBodyHeaders }}
+            - --partial-body-headers={{.Values.partialBodyHeaders}}
+            {{- end }}
+            {{- if eq .Values.global.systemMode "ext-authz" }}
+            - "--system-mode=ext-authz"
+            {{- end }}
+        {{- /* controller server TLS settings */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true }}
+            - --controller-tls=true
+            - --controller-tls-crt-file={{ .certificate }}
+            - --controller-tls-key-file={{ .key }}
+            {{- if eq .clientAuth true }}
+            - --controller-tls-client-auth=true
+            {{- else }}
+            - --controller-tls-client-auth=false
+            {{- end }}
+            {{- if eq .verify true }}
+            - --controller-tls-ca-file={{ .ca }}
+            - --controller-tls-verify=true
+            {{- else }}
+            - --controller-tls-verify=false
+            {{- end }}
+          {{- else }}
+            - --controller-tls=false
+          {{- end }}
+        {{- end }}
+          env:
+          {{- with .Values.containers.controller.goMemoryLimit }}
+            - name: GOMEMLIMIT
+              value: {{ . | quote }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.containers.controller.resources | nindent 12 }}
+          {{- with .Values.containers.controller.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: licenses-cm
+              mountPath: /license
+            - name: custom-rules-cm
+              mountPath: /etc/custom_rules
+            - name: request-data-config-cm
+              mountPath: /etc/request_data_log_config
+        {{- /* controller server TLS mounts */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.serviceAccountName | default "waas-controller-service-account" }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - configMap:
+          defaultMode: 0400
+          name: waas-licenses-configmap
+        name: licenses-cm
+      - configMap:
+          defaultMode: 0666
+          name: waas-custom-rules-configmap
+        name: custom-rules-cm
+      - configMap:
+          defaultMode: 0666
+          name: waas-request-data-configmap
+        name: request-data-config-cm
+    {{- /* controller server TLS volumes */}}
+    {{- with .Values.tls.server }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+{{- end }}

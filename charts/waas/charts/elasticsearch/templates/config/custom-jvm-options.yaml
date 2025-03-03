@@ -1,0 +1,14 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-elasticsearch-jvm-options-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+  jvm.options: |-
+{{ .Files.Get "files/custom.jvm.options" | indent 4 }}
+{{- end }}

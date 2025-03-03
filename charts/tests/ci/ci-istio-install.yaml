@@ -1,0 +1,5 @@
+# Used for selecting application based on sample-istio-integration helm chart
+grpcx: true
+
+# change namespace to radware for envoyfilter resource
+istioGwNs: radware

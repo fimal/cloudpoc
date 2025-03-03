@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-grafana-dashboards-config
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+data:
+  envoy-dashboard.yaml: |-
+{{ .Files.Get "files/envoy-dashboard.yaml" | indent 4 }}

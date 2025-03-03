@@ -1,0 +1,43 @@
+waas-enforcer:
+  nodeSelector:
+    perf: backend
+
+waas-controller:
+  nodeSelector:
+    perf: backend
+
+waas-validationcontroller:
+  nodeSelector:
+    perf: backend
+      
+waas-activity-tracker:
+  nodeSelector:
+    perf: backend
+
+waas-rate-limiter:
+  nodeSelector:
+    perf: backend
+
+waas-profiles-crud:
+  nodeSelector:
+    perf: backend
+
+waas-events-fetcher:
+  nodeSelector:
+    perf: backend
+
+waas-gui:
+  nodeSelector:
+    perf: backend
+
+waas-redis:
+  nodeSelector:
+    perf: backend
+
+waas-elasticsearch:
+  nodeSelector:
+    perf: backend
+
+waas-logstash:
+  nodeSelector:
+    perf: backend

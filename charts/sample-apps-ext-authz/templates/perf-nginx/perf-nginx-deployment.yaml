@@ -1,0 +1,38 @@
+{{- if .Values.perfNginx}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perf-nginx-deployment
+  labels:
+    waas.radware.com/sample: perf-nginx
+spec:
+  selector:
+    matchLabels:
+      app: perf-nginx-container
+  template:
+    metadata:
+      labels:
+        app: perf-nginx-container
+        waas.radware.com/protection: enabled
+    spec:
+      containers:
+      - name: perf-nginx
+        image: fimal/perf-nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: perf-nginx-config
+            mountPath: /etc/nginx
+            readOnly: true
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: perf-nginx-config
+          configMap:
+            name: perf-nginx-config
+            items:
+              - key: nginx.conf #link from the configmap name
+                path: nginx.conf # where to mount (path) - config_item
+{{- end }}

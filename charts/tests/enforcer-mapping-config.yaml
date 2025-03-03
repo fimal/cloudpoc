@@ -1,0 +1,4 @@
+waas-enforcer:
+  configType: mapping
+  configName: waas-ext-auth-mapping
+  configNamespace: test

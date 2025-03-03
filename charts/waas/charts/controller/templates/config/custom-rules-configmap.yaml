@@ -1,0 +1,31 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:  
+  name: waas-custom-rules-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    kwaf-configmap-validation: enable
+    kwaf-configmap-type: custom-rules
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+  custom_rules_conf.json: ''
+  #This file will contain the custom rules configuration as json format.
+  #Example:
+  #custom_rules_conf.json: '[
+  #     {
+  #      "ID": "someID",
+  #      "PatternProp": {"Pattern": "somepattern", "IsRegex": false},
+  #      "ExpectedLocations": ["uri", "headers", "body", "parameters"],
+  #      "HeaderName": "header_x",
+  #      "Description": "some description",
+  #      "Parameters":
+  #        [
+  #             {"Name": "param1", "Value": "value1"},
+  #             {"Name": "param2", "Value": "value2"}
+  #        ]
+  #     }
+  #  ]'
+{{- end }}

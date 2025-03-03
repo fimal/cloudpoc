@@ -1,0 +1,28 @@
+{{- if .Values.bwapp }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-bwapp-deployment
+  labels:
+    waas.radware.com/sample: bwapp
+spec:
+  selector:
+    matchLabels:
+      app: sample-bwapp-container
+  template:
+    metadata:
+      labels:
+        app: sample-bwapp-container
+        waas.radware.com/protection: enabled
+    spec:
+      containers:
+        - image: raesene/bwapp
+          imagePullPolicy: IfNotPresent
+          name: sample-bwapp
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /install.php?install=yes
+              port: 80
+              scheme: HTTP
+{{- end }}

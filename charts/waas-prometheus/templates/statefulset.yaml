@@ -1,0 +1,119 @@
+{{- if .Values.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: waas-prometheus-statefulset
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+spec:
+  serviceName: waas-prometheus-service-headless
+  selector:
+    matchLabels:
+      configid: waas-prometheus-container
+  replicas: {{ .Values.replicaCount }}
+  podManagementPolicy: OrderedReady
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        configid: waas-prometheus-container
+        {{- include "waas.labels" . | indent 8 }}
+    spec:
+      containers:
+        - name: prometheus
+          image: {{ .Values.containers.prometheus.imagePath }}
+          imagePullPolicy: {{ .Values.containers.prometheus.pullPolicy }}
+          args:
+          {{- if .Values.retention }}
+            - --storage.tsdb.retention.time={{ .Values.retention }}
+          {{- end }}
+            - --config.file={{ .Values.configPath }}
+            - --storage.tsdb.path={{ .Values.persistentVolume.mountPath }}
+            - --web.console.libraries=/etc/prometheus/console_libraries
+            - --web.console.templates=/etc/prometheus/consoles
+            - --web.enable-lifecycle
+          {{- if .Values.enableAdminApi }}
+            - --web.enable-admin-api
+          {{- end }}
+          {{- if .Values.skipTSDBLock }}
+            - --storage.tsdb.no-lockfile
+          {{- end }}
+          ports:
+            - containerPort: 9090
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            periodSeconds: 5
+            failureThreshold: 120
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            periodSeconds: 5
+            failureThreshold: 6
+            timeoutSeconds: 3
+          {{- with .Values.containers.prometheus.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.containers.prometheus.resources | nindent 12 }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config/prometheus.yml
+              subPath: prometheus.yml
+            - name: storage-volume
+              mountPath: {{ .Values.persistentVolume.mountPath }}
+              subPath: "{{ .Values.persistentVolume.subPath }}"
+        - name: pushgateway
+          image: {{ .Values.containers.pushgateway.imagePath }}
+          imagePullPolicy: {{ .Values.containers.pushgateway.pullPolicy }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: waas-prometheus-service-account
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+    {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: waas-prometheus-config
+{{- if .Values.persistentVolume.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: storage-volume
+        {{- if .Values.persistentVolume.annotations }}
+        annotations:
+{{ toYaml .Values.persistentVolume.annotations | indent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+{{ toYaml .Values.persistentVolume.accessModes | indent 10 }}
+        resources:
+          requests:
+            storage: "{{ .Values.persistentVolume.size }}"
+      {{- if .Values.persistentVolume.storageClass }}
+      {{- if (eq "-" .Values.persistentVolume.storageClass) }}
+        storageClassName: ""
+      {{- else }}
+        storageClassName: "{{ .Values.persistentVolume.storageClass }}"
+      {{- end }}
+      {{- end }}
+{{- else }}
+        - name: storage-volume
+          emptyDir:
+            sizeLimit: {{ .Values.persistentVolume.size }}
+{{- end }}
+{{- end }}

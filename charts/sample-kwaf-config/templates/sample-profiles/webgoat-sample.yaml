@@ -1,0 +1,26 @@
+{{- if and .Values.webgoat (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  webgoat-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: webgoat-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: webgoat
+      signatures:
+        opMode: Passive
+      expressions:
+        opMode: Passive
+    classifiers:
+    - protectionId: webgoat
+      hostname: '*'
+      id: webgoat-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}

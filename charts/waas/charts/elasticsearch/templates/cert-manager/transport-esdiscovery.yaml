@@ -1,0 +1,47 @@
+{{- if and .Values.enabled .Values.global.certManager.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: elastic-transport-server
+spec:
+  # Secret names are always required.
+  secretName: waas-esdiscovery-server-secret
+
+  # secretTemplate is optional. If set, these annotations and labels will be
+  # copied to the Secret named example-com-tls. These labels and annotations will
+  # be re-reconciled if the Certificate's secretTemplate changes. secretTemplate
+  # is also enforced, so relevant label and annotation changes on the Secret by a
+  # third party will be overwriten by cert-manager to match the secretTemplate.
+  secretTemplate:
+    labels:
+      {{- include "waas.labels" . | indent 6 }}
+    annotations:
+      {{- include "waas.annotations" . | indent 6 }}
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+      - kwaf-demo.test
+  # The use of the common name field has been deprecated since 2000 and is
+  # discouraged from being used.
+  commonName: waas-elasticsearch-discovery
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS8
+    size: 2048
+  usages:
+    # certificate is used for inter-node communications in an elasticsearch cluster
+    # they are used both as client certificates and as server certificates
+    - server auth
+    - client auth
+  # At least one of a DNS Name, URI, or IP address is required.
+  dnsNames:
+    - waas-elasticsearch-discovery.{{ .Release.Namespace }}.svc
+    - waas-elasticsearch-discovery.{{ .Release.Namespace }}.svc.cluster.local
+  # Issuer references are always required.
+  issuerRef:
+    name: {{ .Values.global.certManager.issuer }}
+    kind: ClusterIssuer
+    group: cert-manager.io
+{{- end }}

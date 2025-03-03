@@ -1,0 +1,35 @@
+{{/*Get a list of custom pipeline names */}}
+{{ define "data.pipeline" -}}
+  {{/*Only run when custom pipelines is enabled*/}}
+  {{- if .Values.customPipelines.enabled -}}
+    {{- $pipelines := list -}}
+    {{- range $pipeName, $_ := .Values.customPipelines.pipelines -}}
+      {{- $pipelines = print ($pipeName | quote) | append $pipelines -}}
+    {{- end -}}
+    {{/*Logstash syntax for pipeline output - sending to custom pipeline names*/}}
+    {{- print "#Output to downstream pipelines" | nindent 4 }}
+    {{- print "pipeline {" | nindent 4 }}
+    {{- printf "send_to => [%s]" (join " ," $pipelines) | nindent 8 -}}
+    {{/*Make sure downstream pipeline latency and errors does not effect main pipeline*/}}
+    {{- print "ensure_delivery => " .Values.customPipelines.ensure | nindent 8 -}}
+    {{- print "}" | nindent 4 }}
+  {{- end -}}
+{{- end -}}
+{{- if .Values.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-logstash-pipeline-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+  pipeline.conf: |-
+{{- if .Values.customPipelines.enabled -}}
+  {{- tpl (.Files.Get "files/pipeline.conf") $ | replace "#DONT_REMOVE_REQUIRED_FOR_MULTI_PIPELINE" (include "data.pipeline" . | trim) | nindent 4 }}
+{{- else }}
+  {{- tpl (.Files.Get "files/pipeline.conf") $ | nindent 4 }}
+{{- end }}
+{{- end }}

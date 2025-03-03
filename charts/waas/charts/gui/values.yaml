@@ -1,0 +1,169 @@
+image:
+  registry:
+  version:
+enabled: true
+identityServiceHostIPv4: 127.0.0.1
+identityServiceHostIPv6: ::1
+identityServicePort: 9000
+nodePort: 5
+replicaCount: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+# create k8s secret for credentials
+credentialSecrets: true
+
+##Volumes:
+# /tmp volume used to store temporary files for (htpasswd) init and gui container
+volumeTmp: {}
+
+# /etc/nginx/conf.d volume to store nginx configuration
+volumeCfg: {}
+
+## settings for specific containers
+containers:
+  gui:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  identity:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  initCreateAuthUsers:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+
+tls:
+  server:
+    # servers will accept HTTPS or HTTP connections
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # certificate file location, required if tls.server.enabled
+    certificate: /etc/gui/server/tls.crt
+    # key file location, required if tls.server.enabled
+    key: /etc/gui/server/tls.key
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: gui-server-volume
+        mountPath: /etc/gui/server
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: gui-server-volume
+        secret:
+          secretName: waas-gui-server-secret
+  clients:
+    eventsFetcher:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/events-fetcher/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/events-fetcher/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/events-fetcher/client/ca/ca.crt
+      # verify server upon connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name:
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: events-fetcher-client-volume
+          mountPath: /etc/events-fetcher/client
+        - name: events-fetcher-ca-volume
+          mountPath: /etc/events-fetcher/client/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: events-fetcher-client-volume
+          secret:
+            secretName: waas-events-fetcher-client-secret
+        - name: events-fetcher-ca-volume
+          configMap:
+            name: waas-ca-config
+    profiles:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/profiles-crud/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/profiles-crud/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/profiles-crud/client/ca/ca.crt
+      # verify server upon connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name:
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: profiles-crud-client-volume
+          mountPath: /etc/profiles-crud/client
+        - name: profiles-crud-ca-volume
+          mountPath: /etc/profiles-crud/client/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: profiles-crud-client-volume
+          secret:
+            secretName: waas-profiles-crud-client-secret
+        - name: profiles-crud-ca-volume
+          configMap:
+            name: waas-ca-config
+
+# uncomment to add labels to gui
+# labels:
+
+# uncomment to add annotations to gui
+# extraAnnotations:
+
+# gui service port name prefix to use for istio, defaults to https
+# global:
+#   gui:
+#     serviceAppProtocol: https

@@ -1,0 +1,22 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-request-data-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    kwaf-configmap-validation: enable
+    kwaf-configmap-type: request-data
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+  request_data_log_config.json: '{
+    "payload": {"maxSize": 8000, "disableLogging": false},
+    "headers": {"maxSize": 8000, "maxNumber": 0, "disableLogging": false},
+    "cookies": {"maxSize": 1000000, "disableLogging": false}
+    }'
+  #This file contains the Request Data Log configurations as json format.
+  #Those are the default values.
+  #(0) means unlimited.
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if .Values.webgoat }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-webgoat-service
+  labels:
+    waas.radware.com/sample: webgoat
+spec:
+  selector:
+    app: sample-webgoat-container
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http-goat
+      protocol: TCP
+    - port: 9090
+      targetPort: 9090
+      name: http-wolf
+      protocol: TCP
+{{- end }}

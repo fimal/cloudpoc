@@ -1,0 +1,219 @@
+global:
+  # The imgae section is global for all images including the signatures images
+  image:
+    registry: devart01:8081/waas-img-reg
+    version: :1.19.0
+    # pullPolicy is global and used even if other image specific properties are defined
+    pullPolicy: 
+    imagePullSecret: 
+  # signaturesImage is ued to specify the signatures images properties that differ from the global ones
+  signaturesImage:
+    registry: 
+    version: 
+    imagePullSecret:
+  # pre allocate port numbers for node ports services
+  useNodePort: false
+  # if NodePort is used, all port will start from this number
+  nodePortRangeStart: 31000
+
+  # Does k8s integrate with LoadBalancer provider?
+  useLoadBalancer: false
+
+  # The ElasticSearch user.
+  # The Helm installation manages only change of the password.
+  # Change this value only if using your own ElasticSearch with predefined user/password,
+  # and not using the ElasticSearch provided by this Helm chart
+  elasticsearchUser: elastic
+  # password for the ElasticSearch.
+  elasticsearchPassword: espass
+
+  # Enable kibana user configuration for elasticsearch 
+  kibanaCredEnabled: false
+  # The kibana user used by kibana when connecting to elasticsearch.
+  kibanaSystemUser: kibana_system
+  # password for the ElasticSearch.
+  kibanaSystemPassword: kibanapass
+
+  # Elasticsearch Index Lifecycle Management
+  # control data retention in elastic by setting the ILM policy for indices created
+  elasticStorageManagement:
+    # configure or not configure ILM.
+    enabled: true
+    # policy - this can be either 'custom', 'poc' or 'small'.
+    # choosing 'custom' requires filling in the other parameters.
+    # choosing 'poc' will configure ILM with the smallest possible values
+    # choosing 'small' will configure ILM with low values to allow working with limited drive space
+    policy: custom
+    # these values affect how much data will be retained in elasticsearch indices.
+    # Since elastic evaluates the policy by a time interval, indices can (and will) grow bigger than the
+    # configured max size.
+    # for access log, each record taks about 300-400 bytes. for forensics events the records are bigger and depend on the amount of
+    # forensics events created by the request.
+    # for example, if data comes in at 100000 requests per second, the indices will grow at approximately 30M per second.
+    # in this case, even if the policy is set to 'poc' (allow 1M max index size, 1 hour retention, and 1 second poll interval) the fact that the policy is verified every 1 second means the indices will grow to 30MB each.
+    # 30MB * 60 seconds = 1800MB or 1.8 GB per hour. This means that the elastic nodes should have at least (1.8GB * 1.5) / number of elastic nodes amount of free disk space. Multiplying by 1.5 allows to account for
+    # the fact that data might not be distributed equally across the nodes.
+
+    # pollInterval sets the interval elastic checks the indices against the set policy.
+    pollInterval:
+    # define log type specific maximun index size and delete rolover value
+    # maxSize governs the index maximum size. the format is number+prefix. 1M means 1 Megabyes, 10G means 10 Gigabytes, etc.
+    # indices with size larger than maxSize at time of inspection will be rolled over
+    # delete rolled over indices older than this specified value
+    access:
+      maxSize:
+      delete:
+    security:
+      maxSize:
+      delete:
+    requestData:
+      maxSize:
+      delete:
+    system:
+      maxSize:
+      delete:
+
+  # Waas GUI default user and password
+  guiUser: admin
+  guiPassword: admin
+  guiAdminEmail:
+  # Define authentication method/s from the following list with delimiter ':'
+  #   1. up - means [U]ser/[P]assword using basic authentication method
+  #   2. t  - means k8s [T]oken based authentication
+  # By default: both methods will be activated
+  guiAuthMethod: up:t
+  # Expiration time of access JWT token, provided by identity service
+  guiAuthAccessExpirationTime: 120s
+
+  # WAAS can operate in several modes:
+  # inline - enforcer is inline, as a side car for the protected application, proxying all requests and responses
+  # ExtAuthz - enforcer is out of path, requests are made by implementing the External Authorization filter in Envoy proxy deployed by the customer
+  # possible values inline, ext-authz
+  systemMode: inline
+
+  # labels that should be added to all entities
+  labels:
+    app.kubernetes.io/name: WAAS
+    app.kubernetes.io/instance: WAAS
+
+  # annotations that should be added to all entities
+#  extraAnnotations:
+
+  # leave jobs after completion even if successful
+  preserveJobs: false
+
+  # install additional SCCs when installing in openshift clusters
+  openshift:
+    enabled: false
+
+  # redis configuration
+  redis:
+    ports:
+      servicePort: 6379
+      serviceTargetPort: 6379
+      appProtocol: tcp
+      sentinelPort: 5000
+      sentinelTargetPort: 5000
+      sentinelAppProtocol: tcp
+      gossipAppProtocol: tcp
+    security:
+      enabled: true
+      pass: waasredispass
+
+    # redis supports these configurations
+    # 1. standalone - a single non clustered instance without HA
+    # 2. clustered - (min 3 masters, 3*n replicas). see waas-redis chart on how to change amounts
+    # 3. ha - (min 1 masters, 2 replicas). see waas-redis chart on how to change amounts
+    configuration: standalone
+    # if using ha configuration you have two ways of connecting to your redis statefulset.
+    # a. with sentinelConnect true - through sentinel - meaning you use a sentinel aware client and connect to
+    #    the sentinels on the sentinel port. the sentinel aware client will ask the sentinels for the master
+    #    instance and connect to it.
+    # b. with sentinelConect false - redis service will be configured to only point at the master
+    #    note that this requires running redis with RBAC permissions that allow it to update the pod labels.
+    # 
+    # as kwaf redis client - rate limiter - is sentinel aware, the default is to connect through sentinel
+    sentinelConnect: true
+
+  # when installing in ipv6 cluster, unset ipv6 to enabled
+  ipv6Support: off
+
+  # create RBAC entities during installation
+  rbac: true
+
+
+  # use cert-manager for certificates
+  certManager:
+    enabled: false
+    issuer: issuer-name
+
+  fluentbit:
+    httpPort: 2025
+    serviceAppProtocol: https
+
+  ratelimiter:
+    servicePort: 8081
+    serviceTargetPort: 8081
+    metricServiceAppProtocol: http
+    serviceAppProtocol: http
+
+  controller:
+    serviceTargetPort: 12121
+    servicePort: 12121
+    serviceAppProtocol: tcp
+    enforcerRateLimiterCacheEntriesNumber: 1000
+
+  elasticsearch:
+    enabled: true
+    serviceDiscovery:
+      serviceTargetPort: 9300
+      servicePort: 9300
+      appProtocol: https
+    serviceExposed:
+      servicePort: 443
+      serviceTargetPort: 9200
+      appProtocol: https
+    # add injest timestamp to events in elastic
+    setElasticTimestamp: false
+
+  validationController:
+    servicePort: 443
+    serviceTargetPort: 4443
+    serviceAppProtocol: https
+    # true creates webhook, false skips webhook creation
+    webhooksCreation: true
+
+  eventFetcher:
+    servicePort: 443
+    serviceTargetPort: 8080
+    serviceAppProtocol: https
+
+  gui:
+    servicePort: 443
+    serviceTargetPort: 8080
+    serviceAppProtocol: https
+
+  profilesCrud:
+    servicePort: 443
+    serviceTargetPort: 8080
+    serviceAppProtocol: https
+
+  logstash:
+    servicePort: 2020
+    serviceTargetPort: 2020
+    serviceAppProtocol: https
+
+  enforcer:
+    ports:
+      stats:
+        port: 8080
+        targetPort: 19010
+        appProtocol: http
+      enforcerHttp:
+        port: 80
+        targetPort: 9000
+        appProtocol: http
+      enforcerHttpRL:
+        port: 9929
+        targetPort: 9929
+        appProtocol: http

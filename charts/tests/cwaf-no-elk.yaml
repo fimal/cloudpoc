@@ -1,0 +1,10 @@
+global:
+  elasticsearch:
+    enabled: false
+
+waas-gui:
+  enabled: false
+waas-events-fetcher:
+  enabled: false
+waas-profiles-crud:
+  enabled: false

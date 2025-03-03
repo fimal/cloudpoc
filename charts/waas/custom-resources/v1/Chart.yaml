@@ -1,0 +1,6 @@
+apiVersion: v2
+name: waas-base
+appVersion: "1.19.0"
+description: Helm chart for deployment Radware WAAS resources and crds
+type: application
+version: 1.19.0

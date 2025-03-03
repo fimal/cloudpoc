@@ -1,0 +1,53 @@
+global:
+  kibanaCredEnabled: true
+  elasticStorageManagement:
+      policy: custom
+      pollInterval: 10s
+      access:
+        maxSize: 100M
+        delete: 1d
+      security:
+        maxSize: 100M
+        delete: 1d
+      requestData:
+        maxSize: 100M
+        delete: 1d
+      system:
+        maxSize: 100M
+        delete: 1d
+
+waas-elasticsearch:
+  enabled: true
+  replicaCount: 1
+  processors: 20
+  thread_pool_write_queue_size: 10240
+  thread_pool_write_size: 2
+  indices_memory_index_buffer_size: 50%
+  persistentStorage:
+    size: 10Gi
+  containers:
+    elasticsearch:
+      resources:
+        limits:
+          memory: 16G
+        requests:
+          memory: 16G 
+
+waas-logstash:
+  enabled: true
+  replicaCount: 1
+  jvmMemorySize: 4g
+  batchSize: 2000
+  workers: 10
+  containers:
+    logstash:
+      extraEnv:
+
+
+sample-app:
+  # add extra containers
+  extraContainers:
+  - name: k6
+    image: grafana/k6
+    command: ["sleep"]
+    args: ["30d"]

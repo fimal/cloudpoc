@@ -1,0 +1,10 @@
+global:
+  image:
+    registry: localhost:5001
+    version: :latest-arm64
+    pullPolicy: Always
+    imagePullSecret:
+  signaturesImage:
+    registry: localhost:5001
+    version: :latest-arm64
+    imagePullSecret:

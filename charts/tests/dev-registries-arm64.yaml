@@ -1,0 +1,44 @@
+global:
+  # override image information for kwaf components
+  image:
+    registry: altartifactory:8081/waas-snapshot-local-alt/arm64
+    version: :latest-arm64
+    pullPolicy: IfNotPresent
+    imagePullSecret:
+  signaturesImage:
+    registry: altartifactory:8081/waas-snapshot-local-alt/arm64 
+    version: :latest-arm64
+    pullPolicy: IfNotPresent
+    imagePullSecret:
+  # override sample app's image properties
+  app:
+    httpbin:
+      image:
+        registry: altartifactory:8081/waas-snapshot-local-alt/arm64
+        version: /waas-httpbin:latest-arm64
+        pullPolicy: IfNotPresent
+    grpcx:
+      image:
+        registry: altartifactory:8081/waas-snapshot-local-alt/arm64
+        version: /waas-grpc-server:latest-arm64
+        pullPolicy: Always
+    jwt-api:
+      image:
+        registry: altartifactory:8081/waas-snapshot-local-alt/arm64/waas-jwt-server:latest-arm64
+    event-counter:
+      image:
+        registry: altartifactory:8081/waas-snapshot-local-alt/arm64/waas-event-counter-app:latest-arm64
+
+apps:
+  httpbin:
+    image:
+      registry: altartifactory:8081/waas-snapshot-local-alt/arm64
+      version: /waas-httpbin:latest-arm64
+      pullPolicy: IfNotPresent
+  # this is the grep-server sample app
+  grpcx:
+    image:
+      registry: altartifactory:8081/waas-snapshot-local-alt/arm64
+      version: /waas-grpc-server:latest-arm64
+      pullPolicy: IfNotPresent
+

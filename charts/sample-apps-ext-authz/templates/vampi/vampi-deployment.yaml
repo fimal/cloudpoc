@@ -1,0 +1,27 @@
+{{- if .Values.vampi }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-vampi-deployment
+  labels:
+    waas.radware.com/sample: vampi
+spec:
+  selector:
+    matchLabels:
+      app: sample-vampi-container
+  template:
+    metadata:
+      labels:
+        app: sample-vampi-container
+        waas.radware.com/protection: enabled
+    spec:
+      containers:
+      - name: sample-vampi
+        image: erev0s/vampi
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: tokentimetolive
+          value: "60"
+        - name: vulnerable
+          value: "1"
+{{- end }}

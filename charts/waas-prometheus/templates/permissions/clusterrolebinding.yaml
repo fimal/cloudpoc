@@ -1,0 +1,16 @@
+{{- if and .Values.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  name: waas-prometheus-cluster-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: waas-prometheus-service-account
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: waas-prometheus-cluster-role
+{{- end }}

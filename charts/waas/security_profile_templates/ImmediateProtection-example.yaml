@@ -1,0 +1,49 @@
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  annotations:
+  name: kwaf-immidiate-protection-profile
+  namespace: default
+spec:
+  policies:
+  - classifiers:
+    - hostname: '*'
+      id: example_app_classifier
+      path:
+        operand: Prefix
+        value: /
+      protectionId: immidiate_protection
+    name: ImmediateProtectionPolicy
+    operatorEmail: support@example.com
+    protections:
+    - expressions:
+        excludes:
+        - FCFCAB
+        - LDAP10
+        - S0CRAS
+        - S0DUMP
+        - ATBEAN
+        - ATHETD
+        - ATHETE
+        - FSPA05
+        - ATPANP
+        - FSPA01
+        - FSPA02
+        opMode: Passive
+      id: immidiate_protection
+      signatures:
+        excludes:
+        - 6904
+        - 9295
+        - 9688
+        - 9229
+        - 9359
+        opMode: Passive
+      whitelist:
+        excludes:
+        - isRegex: true
+          methods: 
+          - GET
+          - POST
+          pattern: /.*
+        opMode: Passive

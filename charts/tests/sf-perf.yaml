@@ -1,0 +1,59 @@
+waas-redis:
+  enabled: true
+  persistentStorage:
+    data:
+      enabled: true
+      className: longhorn
+      size: 2Gi
+    cfg:
+      enabled: true
+      className: longhorn
+      size: 10Mi
+  cluster:
+    masters: 3
+    replicas: 1
+  retries: 120
+global:
+  preserveJobs: false
+  redis:
+    configuration: clustered
+
+waas-elasticsearch:
+  enabled: true
+  replicaCount: 5
+  processors: 20
+  thread_pool_write_queue_size: 10240
+  thread_pool_write_size: 2
+  indices_memory_index_buffer_size: 50%
+  persistentStorage:
+    type: "longhorn"
+    size: 2Gi
+  containers:
+    elasticsearch:
+      resources:
+        limits:
+          cpu: "10"
+          memory: 24Gi
+        requests:
+          cpu: "10"
+          memory: 24Gi
+  nodeSelector:
+    elastic: "on"
+
+waas-logstash:
+  enabled: true
+  replicaCount: 5
+  jvmMemorySize: 8g
+  batchSize: 2000
+  workers: 10
+  containers:
+    logstash:
+      resources:
+        limits:
+          cpu: "4"
+          memory: 8Gi
+        requests:
+          cpu: "4"
+          memory: 8Gi
+  nodeSelector:
+    elastic: "on"

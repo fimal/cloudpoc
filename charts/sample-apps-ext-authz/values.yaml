@@ -1,0 +1,33 @@
+# Default values for sample-apps-ext-authz
+bwapp: false
+hackazon: false
+bypass: false
+httpbin: true
+juiceShop: false
+nginx: false
+nginxh2c: true
+grpcx: false
+perfNginx: false
+webgoat: false
+vampi: false
+
+# node selection based on label for performance tests
+nodeSelector: {}
+# ServiceType: ClusterIP, NodePort, LoadBalancer
+serviceType: NodePort
+
+
+# configure image locations and pull policy for sample apps
+apps:
+  httpbin:
+    image:
+      registry: reg.psradware.com/waas
+      version: /waas-httpbin/master:latest
+      pullPolicy: IfNotPresent
+  # this is the grep-server sample app
+  grpcx:
+    image:
+      registry: reg.psradware.com/waas
+      version: /waas-grpc-server/master:latest
+      pullPolicy: IfNotPresent
+  

@@ -1,0 +1,37 @@
+
+{{- if and .Values.enabled .Values.global.validationController.webhooksCreation }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: waas-cm-validation-webhook
+  annotations:
+  {{/* if using cert manager - let cert-manager inject the ca bundle */}}
+  {{- if  .Values.global.certManager.enabled }}
+    cert-manager.io/inject-ca-from: cert-manager/kwaf-ca-secret
+  {{- end }}
+webhooks:
+- name: waas-validation-custom-rules.webhook.svc
+  admissionReviewVersions: ["v1"]
+  clientConfig:
+    service:
+      name: waas-validation-controller
+      namespace: {{ .Release.Namespace }}
+      path: "/waas"
+      port: {{ .Values.global.validationController.servicePort | default 443 }}
+    {{/* if not using cert-manager, supply the caBundle using helm values */}}
+    {{- if and .Values.tls.webhook.caBundle (not .Values.global.certManager.enabled) }}
+    caBundle: {{ .Values.tls.webhook.caBundle }}
+    {{- end }}
+  failurePolicy: Fail
+  timeoutSeconds: {{ .Values.timeout }}
+  rules:
+    - operations: [ "CREATE", "UPDATE" ]
+      apiGroups: [""]
+      apiVersions: ["v1"]
+      resources: ['configmaps']
+      scope: Namespaced
+  objectSelector:
+    matchLabels:
+      kwaf-configmap-validation: enable
+  sideEffects: None
+{{- end }}

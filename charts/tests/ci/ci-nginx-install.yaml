@@ -1,0 +1,3 @@
+# nginx keepalive should be false to overcome fast configuration changes in automation testing
+lua:
+  keepalive: false

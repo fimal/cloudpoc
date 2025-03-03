@@ -1,0 +1,16 @@
+{{- if .Values.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-logstash-custom-pipeline-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+{{- range $pipeName, $pipeValue := .Values.customPipelines.pipelines }}
+{{ $pipeName | indent 2 }}: |-
+{{ $pipeValue | indent 4 }}
+{{- end }}
+{{- end }}

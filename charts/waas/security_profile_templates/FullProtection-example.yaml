@@ -1,0 +1,46 @@
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  annotations:
+  name: kwaf-full-protection-profile
+  namespace: default
+spec:
+  policies:
+  - classifiers:
+    - hostname: '*'
+      id: example_app_classifier
+      path:
+        operand: Prefix
+        value: /
+      protectionId: full_protection
+    name: FullProtectionPolicy
+    operatorEmail: support@example.com
+    protections:
+    - expressions:
+        opMode: Passive
+      id: full_protection
+      activityTracking:
+        blockPeriod: 5m
+        countStatic: false
+        excludes: []
+        ignoreStaticWithParams: false
+        opMode: Bypass
+        rate: 5s
+      rfcValidation:
+        action: Block
+        report: Always
+      dlp:
+        opMode: Active
+        patterns:
+        - excludes: []
+          predefined: SSN
+      signatures:
+        opMode: Passive
+      whitelist:
+        excludes:
+        - isRegex: true
+          methods:
+          - GET
+          - POST
+          pattern: /.*
+        opMode: Passive

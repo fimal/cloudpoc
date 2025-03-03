@@ -1,0 +1,554 @@
+
+global:
+  openshift:
+    enabled: true
+  app:
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      capabilities: null
+      readOnlyRootFilesystem: null
+      runAsGroup: null
+      runAsUser: null
+
+waas-elasticsearch:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  # how to store the ElasticSearch data?
+  persistentStorage:
+    type: openshift
+    size: 500Mi
+  containers:
+    initSysctl1:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: 0
+    elasticsearch:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    licenseMeter:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-redis:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  enabled: true
+  configuration: clustered
+  persistentStorage:
+    data:
+      enabled: true
+      className:
+      size: 2Gi
+    cfg:
+      enabled: true
+      className:
+      size: 10Mi
+  containers:
+    init:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    exporter:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    redis:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    redisJob:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-rate-limiter:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    rater:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-controller:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    controller:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-enforcer:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    enforcer:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    logrotate:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    fluentbit:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    enrich:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-events-fetcher:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    eventsFetcher:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-gui:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    gui:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    identity:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    initCreateAuthUsers:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-logstash:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    logstash:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    enrich:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-postdelete:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    postdelete:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-preupgrade:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    preupgrade:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-preinstall:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    preinstall:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-profiles-crud:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    profiles:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    enrich:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+waas-validationcontroller:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+  containers:
+    validationcontroller:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+
+    webhookInstall:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+
+    webhookDelete:
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+
+sample-app:
+  securityContext: 
+    runAsUser: null
+    runAsGroup: null
+    fsGroup: null
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    enforcer:
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    logrotate:
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    fluentbit:
+      securityContext:
+        allowPrivilegeEscalation: null
+        runAsNonRoot: null
+        capabilities: null
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL
+    enrich:
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: null
+        runAsGroup: null
+        runAsUser: null
+        capabilities:
+          drop:
+          - ALL

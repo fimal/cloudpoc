@@ -1,0 +1,11 @@
+apiVersion: waas.radware.com/v1beta1
+kind: SourceGroup
+metadata:
+  name: sg-actor-analysis
+  namespace: test
+spec:
+  actors:
+  - name: a-basic-auth
+    namespace: test
+    values:
+    - user

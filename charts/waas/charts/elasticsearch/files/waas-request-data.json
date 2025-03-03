@@ -1,0 +1,54 @@
+{
+  "index_patterns": [
+    "request_data*"
+  ],
+  "template": {
+    "settings": {
+      {{- if .Values.global.elasticStorageManagement.enabled }}
+      "lifecycle": {
+        "name": "waas_ilm_request_data",
+        "rollover_alias": "request_data"
+      },
+      {{- end }}
+      {{- if .Values.global.elasticsearch.setElasticTimestamp }}
+      "final_pipeline": "waas-ingest-timestamp",
+      {{- end }}
+      "number_of_shards": 6,
+      "number_of_replicas": 1,
+      "refresh_interval": "5s",
+      "translog": {
+        "durability": "async",
+        "sync_interval": "5s"
+      },
+      "analysis": {
+        "normalizer": {
+          "lowercase_normalizer": {
+            "filter": [
+              "lowercase"
+            ],
+            "type": "custom",
+            "char_filter": []
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "headers": {
+          "type": "flattened"
+        },
+        "body": {
+          "type": "text"
+        },
+        "transactionId": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        }
+      }
+    }
+  }
+}

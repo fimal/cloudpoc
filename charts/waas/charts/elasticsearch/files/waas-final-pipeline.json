@@ -1,0 +1,11 @@
+{
+  "processors": [
+    {
+      "set": {
+        "field": "elastic_ts",
+        "value": "{{`{{_ingest.timestamp}}`}}",
+        "description": "set the elasticsearch ingest time"
+      }
+    }
+  ]
+}

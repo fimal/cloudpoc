@@ -1,0 +1,21 @@
+waas-redis:
+  enabled: true
+  persistentStorage:
+    data:
+      enabled: true
+      size: 300Mi
+      rdb: save 60 100 3600 10
+      aof:
+        appendonly: true
+    cfg:
+      enabled: true
+      size: 15M
+  cluster:
+    masters: 3
+    replicas: 1
+  retries: 120
+global:
+  preserveJobs: false
+  redis:
+    configuration: clustered
+    

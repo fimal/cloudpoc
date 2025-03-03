@@ -1,0 +1,32 @@
+## jobs for collecting information from api-servier, kubelets, etc.
+- job_name: 'kubelet'
+  kubernetes_sd_configs:
+  - role: node
+  scheme: https
+  tls_config:
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    insecure_skip_verify: true  # Required with Minikube.
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+- job_name: 'cadvisor'
+  kubernetes_sd_configs:
+  - role: node
+  scheme: https
+  tls_config:
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    insecure_skip_verify: true  # Required with Minikube.
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  metrics_path: /metrics/cadvisor
+
+## collect metrics from api server
+# - job_name: 'k8apiserver'
+#   kubernetes_sd_configs:
+#   - role: endpoints
+#   scheme: https
+#   tls_config:
+#     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+#     insecure_skip_verify: true  # Required if using Minikube.
+#   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+#   relabel_configs:
+#   - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+#     action: keep
+#     regex: default;kubernetes;https

@@ -1,0 +1,129 @@
+image:
+  registry:
+  version:
+enabled: true
+nodePort: 4
+replicaCount: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+## settings for specific containers
+containers:
+  eventsFetcher:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+
+serviceAccountName: ""
+
+tls:
+  server:
+    # servers will accept HTTPS or HTTP connections
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # client authentication using client certificate may be required
+    # allowed values: true, false
+    # default value: do not require client authentication
+    clientAuth: true
+    # certificate file location, required
+    certificate: /etc/events-fetcher/server/tls.crt
+    # key file location, required
+    key: /etc/events-fetcher/server/tls.key
+    # ca certificate file location, not required if clientAuth=false
+    ca: /etc/events-fetcher/ca/ca.crt
+    # verify server upon connection
+    # allowed values: true, false
+    # default value: verify server identity
+    verify: true
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: events-fetcher-server-volume
+        mountPath: /etc/events-fetcher/server
+      - name: ca-volume
+        mountPath: /etc/events-fetcher/ca
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: events-fetcher-server-volume
+        secret:
+          secretName: waas-events-fetcher-server-secret
+      - name: ca-volume
+        configMap:
+          name: waas-ca-config
+  clients:
+    elasticsearch:
+      # ca certificate file location, not mandatory
+      ca: /etc/elasticsearch/ca/ca.crt
+      # verify server upn connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name: 
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: es-ca-volume
+          mountPath: /etc/elasticsearch/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: es-ca-volume
+          configMap:
+            name: waas-ca-config
+    eventsFetcher:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/events-fetcher/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/events-fetcher/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/events-fetcher/client/ca/ca.crt
+      # verify server upon connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name: 
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: events-fetcher-client-volume
+          mountPath: /etc/events-fetcher/client
+        - name: events-fetcher-ca-volume
+          mountPath: /etc/events-fetcher/client/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: events-fetcher-client-volume
+          secret:
+            secretName: waas-events-fetcher-client-secret
+        - name: events-fetcher-ca-volume
+          configMap:
+            name: waas-ca-config
+
+# uncomment to add extra labels to events-fetcher
+# labels:
+
+# uncomment to add extra annotations to events-fetcher
+# extraAnnotations:
+
+# event fetcher service port name prefixes to use for istio, defaults to https
+# global:
+#   eventFetcher:
+#     serviceAppProtocol: https

@@ -1,0 +1,163 @@
+image:
+  registry:
+  version:
+# Volume size limit for logstash-data-volume
+volumeData:
+  sizeLimit: 1Gi
+# volume size limit for enrich volume
+volumeEnrich: {}
+# Volume size limit for usr/share/logstash/settings (for settings files and jvm temp)
+volumeCfg: {}
+
+enabled: true
+nodePort: 3
+replicaCount: 1
+jvmMemorySize: 2g
+# LogStash bulk index batch size (how many event in each ElasticSearch bulk index request)
+batchSize: 2000
+# This directory will be mounted for logstash configuration files, default is /usr/share/logstash/settings
+# !!! the name of directory should not be /usr/share/logstash/config
+lsSettingsDir:
+# LogStash worker threads amount
+workers: 10
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+## settings for specific containers
+containers:
+  logstash:
+    registry:
+    version:
+    resources: {}
+    # for high performance, logstash should have allocated resources, for example:
+    #limits:
+    #  cpu:
+    #  memory:
+    #requests:
+    #  cpu: 4
+    #  memory: 2Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  enrich:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+
+tls:
+  server:
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # client authentication using client certificate may be required
+    # allowed values: true, false
+    # default value: do not require client authentication
+    clientAuth: true
+    # certificate file location, required
+    certificate: /etc/tls/logstash/server/tls.crt
+    # key file location, required
+    key: /etc/tls/logstash/server/tls.key
+    # ca certificate file location, not required if clientAuth=false
+    ca: /etc/tls/logstash/ca/ca.crt
+    # verify server upon connection
+    # allowed values: true, false
+    # default value: verify server identity
+    verify: true
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: logstash-server-volume
+        mountPath: /etc/tls/logstash/server
+      - name: logstash-ca-volume
+        mountPath: /etc/tls/logstash/ca
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: logstash-server-volume
+        secret:
+          secretName: waas-logstash-server-secret
+      - name: logstash-ca-volume
+        configMap:
+          name: waas-ca-config
+  clients:
+    elasticsearch:
+      # ca certificate file location, not required if clientAuth=false
+      ca: /etc/tls/logstash/client/ca/ca.crt
+      # verify server upon connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: logstash-client-ca-volume
+          mountPath: /etc/tls/logstash/client/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: logstash-client-ca-volume
+          configMap:
+            name: waas-ca-config
+###
+# custom pipeline configuration (the pipeline config files should be nested to "customPipelines.pipelines")
+# input vip should be the pipeline name
+# for example:
+# customPipelines:
+#   pipelines:
+#     pipelinea: |-
+#       input { pipeline { address => "pipelinea" } }
+#       output { stdout {} }
+#     pipelineb: |-
+#       input { pipeline { address => "pipelineb" } }
+#       output { stdout {} }
+# or use --set-file argument, for example (single quotes are and escaping "." in file extention is mandatory):
+#  --set-file 'waas-logstash.customPipelines.pipelines.pipelinea\.conf'=pipelines/.conf --set-file 'waas-logstash.customPipelines.pipelines.pipelineb\.conf'=pipelines/pipelineb.conf
+###
+customPipelines:
+  enabled: 
+  # This directory will be mounted for logstash additional pipeline files
+  dir: "/usr/share/logstash/custom/"
+  # ensure events delivered to custom target
+  ensure: false
+  # the actual pipelines to add
+  pipelines:
+
+# extra environment variables
+extraEnv:
+# extra settings
+# ---------------------------
+# add extra labels
+# labels:
+
+# add extra annotations
+# extraAnnotations:
+
+# add extra containers
+# extraContainers:
+
+# add extra init containers
+# extraInitContainers:
+
+# extra volumes
+# extraVolumes:
+
+# logstash service port name prefix to use for istio, defaults to https
+# global:
+#   logstash:
+#     serviceAppProtocol: https

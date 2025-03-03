@@ -1,0 +1,21 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-elasticsearch-exposed
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-elasticsearch-container
+  {{- include "waas.serviceTypeInternal" . }}
+  ports:
+    - port: {{ .Values.global.elasticsearch.serviceExposed.servicePort | default 443 }}
+      targetPort: {{ .Values.global.elasticsearch.serviceExposed.serviceTargetPort | default 9200 }}
+      protocol: TCP
+      name: {{ .Values.global.elasticsearch.serviceExposed.appProtocol | default "https" }}-esqueries
+      {{ include "waas.nodeport" . }}
+{{- end }}

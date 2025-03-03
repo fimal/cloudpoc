@@ -1,0 +1,17 @@
+{{- if .Values.nginxh2c}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-nginxh2c-service
+  labels:
+    waas.radware.com/sample: nginxh2c
+spec:
+  selector:
+    app: sample-nginxh2c-container
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http2
+      protocol: TCP
+{{- end }}

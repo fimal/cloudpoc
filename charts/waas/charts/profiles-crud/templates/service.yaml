@@ -1,0 +1,21 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-profiles-crud
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-profiles-crud-container
+  {{- include "waas.serviceTypeInternal" . }}
+  ports:
+    - port: {{ .Values.global.profilesCrud.servicePort | default 443 }}
+      targetPort: {{ .Values.global.profilesCrud.serviceTargetPort | default 8080 }}
+      {{ include "waas.nodeport" . }}
+      protocol: TCP
+      name: {{ .Values.global.profilesCrud.serviceAppProtocol | default "https" }}-prof-crud
+{{- end }}

@@ -1,0 +1,22 @@
+{{- if .Values.hackazon }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-hackazon-deployment
+  labels:
+    waas.radware.com/sample: hackazon
+spec:
+  selector:
+    matchLabels:
+      app: sample-hackazon-container
+  template:
+    metadata:
+      labels:
+        app: sample-hackazon-container
+        waas.radware.com/protection: enabled
+    spec:
+      containers:
+        - image: sambercovici/hackazon:latest
+          imagePullPolicy: IfNotPresent
+          name: sample-hackazon
+{{- end }}

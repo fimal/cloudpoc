@@ -1,0 +1,33 @@
+{{- if .Values.enabled }}
+{{- $mode := include "waas.redis.mode" .}}
+## mode = {{$mode}}
+{{- $sentinelConnect := .Values.global.redis.sentinelConnect }}
+## sentinelConnect = {{$sentinelConnect}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-redis-container
+{{- if and (eq $mode "ha") (not $sentinelConnect) }}
+    kwaf.radware.com/redis-role: master
+{{- end }}
+  ports:
+  - port: {{ .Values.global.redis.ports.servicePort | default 6379 }}
+    targetPort: {{ .Values.global.redis.ports.serviceTargetPort | default 6379 }}
+    protocol: TCP
+    name: {{ .Values.global.redis.ports.appProtocol | default "tcp" }}-client
+{{- if and (eq $mode "ha") $sentinelConnect }}
+  - port: {{ .Values.global.redis.ports.sentinelPort | default 5000 }}
+    targetPort: {{ .Values.global.redis.ports.sentinelTargetPort | default 5000 }}
+    protocol: TCP
+    name: {{ .Values.global.redis.ports.sentinelAppProtocol | default "tcp" }}-sentinel
+{{- end }}
+{{- end }}

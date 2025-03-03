@@ -1,0 +1,8 @@
+apiVersion: waas.radware.com/v1beta1
+kind: Actor
+metadata:
+  name: a-cookie
+  namespace: test
+spec:
+  cookie:
+    name: xyz

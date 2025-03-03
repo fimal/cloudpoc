@@ -1,0 +1,2 @@
+waas-controller:
+  addDebugHeaders: true

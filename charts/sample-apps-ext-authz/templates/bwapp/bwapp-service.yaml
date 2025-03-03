@@ -1,0 +1,17 @@
+{{- if .Values.bwapp }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-bwapp-service
+  labels:
+    waas.radware.com/sample: bwapp
+spec:
+  selector:
+    app: sample-bwapp-container
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+      protocol: TCP
+{{- end }}

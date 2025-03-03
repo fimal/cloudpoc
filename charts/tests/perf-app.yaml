@@ -1,0 +1,18 @@
+# Used for selecting application based on sample-istio-integration helm chart
+bwapp: false
+bypass: false
+httpbin: false
+juiceShop: false
+nginx: false
+nginxh2c: false
+grpcx: false
+hackazon: false
+perfNginx: true
+webgoat: false
+vampi: false
+lua:
+  backendAppUrl: "perf-nginx-service.test.svc.cluster.local"
+# envoyFilter enforcer service destination
+enforcerUri: "http://enforcer.local:9000"
+clusterName: "outbound|9000||enforcer.local"
+#centrilazed: enforcerUri=http://waas-enforcer.kwaf.svc, clusterName=outbound|80||waas-enforcer.kwaf.svc.cluster.local

@@ -1,0 +1,333 @@
+# mapping sample
+apiVersion: waas.radware.com/v1beta1
+kind: Mapping
+metadata:
+  name:  waas-ext-auth-mapping
+  namespace: kwaf
+  labels:
+    release: waas
+spec:
+  operatorEmail: support@somewhere.com
+  maps:
+  - domains:
+    - juice-shop.kwaf-demo.test
+    - juice-shop.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: juice-shop-sample
+      namespace: kwaf
+  - domains:
+    - bwapp.kwaf-demo.test
+    - bwapp.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: bwapp-sample
+      namespace: kwaf
+  - domains:
+    - hackazon.kwaf-demo.test
+    - hackazon.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: hackazon-sample
+      namespace: kwaf
+  - domains:
+    - httpbin.kwaf-demo.test
+    - httpbin.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: waas-api-profile
+      namespace: kwaf
+  - domains:
+    - bypass.kwaf-demo.test
+    - bypass.kwaf-demo.test:*
+    - bypass.kwaf-demo.test-shadow
+    - bypass.kwaf-demo.test-shadow:*
+    operatorEmail: ""
+    profile:
+      name: bypass-sample
+      namespace: kwaf
+  - domains:
+    - nginx.kwaf-demo.test
+    - nginx.kwaf-demo.test:*
+    - app1.kwaf-demo.test
+    - app1.kwaf-demo.test:*
+    - nginxh2c.kwaf-demo.test
+    - nginxh2c.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: nginx-sample
+      namespace: kwaf
+  - domains:
+    - grpcx.kwaf-demo.test
+    - grpcx.kwaf-demo.test:*
+    profile:
+     # TODO: Change profile
+      name: grpcx-sample
+      namespace: kwaf
+  - domains:
+    - webgoat.kwaf-demo.test
+    - webgoat.kwaf-demo.test:*
+    - webwolf.kwaf-demo.test
+    - webwolf.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: webgoat-sample
+      namespace: kwaf
+  - domains:
+    - vampi.kwaf-demo.test
+    - vampi.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: vampi-sample
+      namespace: kwaf
+---
+
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  bwapp-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: bwapp-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: bwapp
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: bwapp
+      hostname: '*'
+      id: bwapp-sample
+      path:
+        operand: Prefix
+        value: /
+---
+
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  hackazon-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: hackazon-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: hackazon
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: hackazon
+      hostname: '*'
+      id: hackazon-sample
+      path:
+        operand: Prefix
+        value: /
+---
+
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  waas-api-profile
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: apiPolicy
+    operatorEmail: support@radware.com
+    protections:
+    - id: httpbin
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: httpbin
+      hostname: '*'
+      id: httpbin-sample
+      path:
+        operand: Prefix
+        value: /
+---
+
+
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  nginx-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: all-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: nginx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: nginxh2c
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: app1
+      signatures:
+        opMode: Passive
+      expressions:
+        opMode: Passive
+    classifiers:
+    - protectionId: nginx
+      hostname: nginx.kwaf-demo.test
+      id: nginx-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: nginxh2c
+      hostname: nginxh2c.kwaf-demo.test
+      id: nginxh2c-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: app1
+      hostname: app1.kwaf-demo.test
+      id: app1-sample
+      path:
+        operand: Prefix
+        value: /
+    
+---
+
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  juice-shop-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: juice-shop-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: juice-shop
+      expressions:
+        opMode: Active
+      signatures:
+        opMode: Active
+        advExcludes:
+        - ruleIDs:
+          - 9281
+          zone: uri
+    classifiers:
+    - protectionId: juice-shop
+      hostname: '*'
+      id: juice-shop-sample
+      path:
+        operand: Prefix
+        value: /
+---
+
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name: bypass-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: bypass-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: bypass-sample
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: bypass-sample
+      hostname: '*'
+      id: bypass-sample
+      path:
+        operand: Prefix
+        value: /
+---
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  grpcx-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: grpcx-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: grpcx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: grpcx
+      hostname: '*'
+      id: grpcx-sample
+      path:
+        operand: Prefix
+        value: /
+---
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  webgoat-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: webgoat-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: webgoat
+      signatures:
+        opMode: Passive
+      expressions:
+        opMode: Passive
+    classifiers:
+    - protectionId: webgoat
+      hostname: '*'
+      id: webgoat-sample
+      path:
+        operand: Prefix
+        value: /
+---
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  vampi-sample
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: vampi-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: vampi
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: vampi
+      hostname: '*'
+      id: vampi-sample
+      path:
+        operand: Prefix
+        value: /
+---

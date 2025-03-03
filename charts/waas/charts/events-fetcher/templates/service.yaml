@@ -1,0 +1,21 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-events-fetcher
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-events-fetcher-container
+  {{- include "waas.serviceTypeInternal" . }}
+  ports:
+    - port: {{ .Values.global.eventFetcher.servicePort | default 443 }}
+      targetPort: {{ .Values.global.eventFetcher.serviceTargetPort | default 8080 }}
+      {{ include "waas.nodeport" . }}
+      protocol: TCP
+      name: {{ .Values.global.eventFetcher.serviceAppProtocol | default "https" }}-events
+{{- end }}

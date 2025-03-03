@@ -1,0 +1,50 @@
+{{- if and .Values.enabled .Values.global.rbac }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: waas-profiles-crud-role
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["list"]
+  - apiGroups: ["waas.radware.com"]
+    resources: ["profiles", "profiles/status", "mappings", "mappings/status"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+  - apiGroups: ["waas.radware.com"]
+    resources: ["sourcegroups", "sourcegroups/status"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+  - apiGroups: ["waas.radware.com"]
+    resources: 
+      - segments
+      - segments/status
+      - openapis
+      - openapis/status
+      - apispecs
+      - apispecs/status
+      - decodingbehaviors
+      - decodingbehaviors/status
+      - patterngroups
+      - patterngroups/status
+      - piiredactions
+      - piiredactions/status
+      - tokenvalidations
+      - tokenvalidations/status
+      - sigfilters
+      - sigfilters/status
+      - actors
+      - actors/status
+    verbs: 
+      - create
+      - get
+      - list
+      - update
+      - delete
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["waas-custom-rules-configmap", "waas-request-data-configmap"]
+    verbs: ["get", "update", "list"]
+{{- end }}

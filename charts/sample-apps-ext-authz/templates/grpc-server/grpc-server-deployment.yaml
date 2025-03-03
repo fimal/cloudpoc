@@ -1,0 +1,32 @@
+{{- if .Values.grpcx }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-grpcx-deployment
+  labels:
+    waas.radware.com/sample: grpcx
+spec:
+  selector:
+    matchLabels:
+      app: sample-grpcx-container
+  template:
+    metadata:
+      labels:
+        app: sample-grpcx-container
+        waas.radware.com/protection: enabled
+    spec:
+      containers:
+        - image: {{ .Values.apps.grpcx.image.registry }}{{ .Values.apps.grpcx.image.version }}
+          imagePullPolicy: {{ .Values.apps.grpcx.image.pullPolicy }}
+          name: sample-grpcx
+          command:
+            #- gunicorn
+            #- "-b=[::]:8080"
+            #- grpcx:app
+            #- -k
+            #- gevent
+          readinessProbe:
+            failureThreshold: 3
+            tcpSocket: 
+              port: 50051
+{{- end }}

@@ -1,0 +1,3 @@
+# disable access log in controller deployment
+waas-controller:
+  enforcerAccessLog: false

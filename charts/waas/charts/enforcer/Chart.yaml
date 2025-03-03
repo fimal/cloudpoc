@@ -1,0 +1,5 @@
+apiVersion: v2
+appVersion: "1.19.0"
+description: Radware WAAS ENFORCER
+name: waas-enforcer
+version: 1.19.0

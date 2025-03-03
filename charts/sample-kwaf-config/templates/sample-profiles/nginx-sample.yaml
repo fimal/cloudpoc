@@ -1,0 +1,50 @@
+{{- if (eq .Values.configType "mapping") }}
+{{- if or .Values.nginx .Values.nginxh2c }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  nginx-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: all-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: nginx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: nginxh2c
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: app1
+      signatures:
+        opMode: Passive
+      expressions:
+        opMode: Passive
+    classifiers:
+    - protectionId: nginx
+      hostname: nginx.kwaf-demo.test
+      id: nginx-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: nginxh2c
+      hostname: nginxh2c.kwaf-demo.test
+      id: nginxh2c-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: app1
+      hostname: app1.kwaf-demo.test
+      id: app1-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}
+{{- end }}

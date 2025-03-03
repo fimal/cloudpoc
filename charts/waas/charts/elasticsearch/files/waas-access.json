@@ -1,0 +1,241 @@
+{
+  "index_patterns": [
+    "access*"
+  ],
+  "template": {
+    "settings": {
+      {{- if .Values.global.elasticStorageManagement.enabled }}
+      "lifecycle": {
+        "name": "waas_ilm_access",
+        "rollover_alias": "access"
+      },
+      {{- end }}
+      {{- if .Values.global.elasticsearch.setElasticTimestamp }}
+      "final_pipeline": "waas-ingest-timestamp",
+      {{- end }}
+      "number_of_shards": 6,
+      "number_of_replicas": 1,
+      "refresh_interval": "5s",
+      "translog": {
+        "durability": "async",
+        "sync_interval": "5s"
+      },
+      "analysis": {
+        "normalizer": {
+          "lowercase_normalizer": {
+            "filter": [
+              "lowercase"
+            ],
+            "type": "custom",
+            "char_filter": []
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "agent": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "auth": {
+          "type": "keyword"
+        },
+        "body_params_count": {
+          "type": "integer",
+          "index": false
+        },
+        "bytes_recv": {
+          "type": "integer",
+          "index": false
+        },
+        "bytes_sent": {
+          "type": "integer",
+          "index": false
+        },
+        "classifier_name": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "content_length": {
+          "type": "integer",
+          "index": false
+        },
+        "content_type": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "cookie_params_count": {
+          "type": "integer",
+          "index": false
+        },
+        "downstream_local_address": {
+          "type": "keyword"
+        },
+        "downstream_remote_address": {
+          "type": "keyword"
+        },
+        "duration": {
+          "type": "integer",
+          "index": false
+        },
+        "headers_count": {
+          "type": "integer",
+          "index": false
+        },
+        "host_name": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "incomplete_protections": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "inspection": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "policy_hash": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "policy_name": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "protocol": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "req_method": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "req_path": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "req_server_name": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "req_x_forward": {
+          "type": "keyword"
+        },
+        "req_xid": {
+          "type": "keyword",
+          "index": true
+        },
+        "resp_code": {
+          "type": "keyword"
+        },
+        "resp_duration": {
+          "type": "integer",
+          "index": false
+        },
+        "resp_flags": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "resp_time": {
+          "type": "integer",
+          "index": false
+        },
+        "resp_tx_duration": {
+          "type": "integer"
+        },
+        "upstream_cluster": {
+          "type": "keyword"
+        },
+        "upstream_failure_reason": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "upstream_host": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "upstream_local_address": {
+          "type": "keyword"
+        },
+        "waas_profile": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "waas_tag": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "waas_profile_orig": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "waas_policy_orig": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "waas_classifier_orig": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "multi_profile_mode": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "user_ip_header": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "user_ip_value": {
+          "type": "ip"
+        },
+        "user_geo": {
+          "type": "object",
+          "dynamic": true,
+          "properties": {
+            "location": {
+              "type": "geo_point"
+            },
+            "country_name": {
+              "type": "keyword"
+            },
+            "region_name": {
+              "type": "keyword"
+            },
+            "city_name": {
+              "type": "keyword"
+            },
+            "continent_code": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}

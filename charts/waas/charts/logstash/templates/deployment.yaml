@@ -1,0 +1,207 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-logstash-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      configid: waas-logstash-container
+  template:
+    metadata:
+      labels:
+        configid: waas-logstash-container
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: logstash
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.logstash.registry }}/waas-logstash{{ include "waas.image.version" . | coalesce .Values.containers.logstash.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          env:
+            - name: LS_JAVA_OPTS
+              value: "-Xmx{{.Values.jvmMemorySize}} -Xms{{.Values.jvmMemorySize}}"
+            - name: PIPELINE_ECS_COMPATIBILITY
+              value: disabled
+            - name: CONFIG_RELOAD_AUTOMATIC
+              value: "true"
+            - name: XPACK_MONITORING_ENABLED
+              value: "false"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: PIPELINE_WORKERS
+              value: {{ .Values.workers | quote}}
+            - name: PIPELINE_BATCH_SIZE
+              value: {{ .Values.batchSize | quote}}
+            {{- if (default .Values.global.elasticsearch.enabled true) }}
+            - name: ES_SERVICE
+              value: "https://waas-elasticsearch-exposed.{{ .Release.Namespace }}.svc:{{.Values.global.elasticsearch.serviceExposed.servicePort | default 443}}"
+            - name: ES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: user
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: password
+            {{- end }}
+            - name: path.data
+              value: data
+            - name: LS_SETTINGS_DIR
+              value: {{ .Values.lsSettingsDir | default "/usr/share/logstash/settings" | quote }}
+            - name: LS_PIPELINE_DIR
+              value: {{ .Values.customPipelines.dir | default "/usr/share/logstash/custom/" | quote }}
+            {{- /* extra env vars */}}
+            {{- if .Values.extraEnv }}
+              {{- toYaml .Values.extraEnv | nindent 12 }}
+            {{- end }}
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 6
+            failureThreshold: 20
+            successThreshold: 1
+            httpGet:
+              path: /
+              port: 9600
+              scheme: HTTP
+          livenessProbe:
+            timeoutSeconds: 6
+            failureThreshold: 10
+            successThreshold: 1
+            initialDelaySeconds: 60
+            httpGet:
+              path: /
+              port: 9600
+              scheme: HTTP
+          resources:
+            {{- toYaml .Values.containers.logstash.resources | nindent 12 }}
+          {{- with .Values.containers.logstash.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: logstash-data-volume
+              mountPath: /usr/share/logstash/data
+            - name: logstash-pipeline-volume
+              mountPath: /usr/share/logstash/pipeline/
+            - name: logstash-custom-pipeline-volume
+              mountPath: {{ .Values.customPipelines.dir | default "/usr/share/logstash/custom/" }}
+            - name: logstash-settings-volume
+              mountPath: {{ .Values.lsSettingsDir | default "/usr/share/logstash/settings" }}
+            - name: enrich-volume
+              mountPath: /enrich
+        {{- /* logstash server TLS mounts */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+          {{- if (default .Values.global.elasticsearch.enabled true)}}
+          {{- /* logstash elasticsearch client TLS mounts */}}
+          {{- with .Values.tls.clients.elasticsearch -}}
+            {{- if eq .verify true }}
+              {{- with .mounts}}
+                {{- toYaml . | nindent 12 }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+      {{- if .Values.extraContainers }}
+        {{- toYaml .Values.extraContainers | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.global.image.imagePullSecret .Values.global.signaturesImage.imagePullSecret }}
+      imagePullSecrets:
+        {{- if .Values.global.image.imagePullSecret }}
+      - name: {{ .Values.global.image.imagePullSecret }}
+        {{- end }}
+        {{- if .Values.global.signaturesImage.imagePullSecret }}
+      - name: {{ .Values.global.signaturesImage.imagePullSecret }}
+        {{- end }}
+      {{- end }}
+      initContainers:
+        - name: init-enrich
+          image: {{ include "waas.signatures-image.registry" . | coalesce .Values.containers.enrich.registry }}/waas-enrich{{ include "waas.signatures-image.version" . | coalesce .Values.containers.enrich.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          args:
+            - kopy
+            - /src/logstash
+            - /enrich
+          resources:
+            {{- toYaml .Values.containers.enrich.resources | nindent 12 }}
+          {{- with .Values.containers.enrich.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /enrich
+              name: enrich-volume
+      {{- if .Values.extraInitContainers }}
+        {{- toYaml .Values.extraInitContainers | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: logstash-pipeline-volume
+        configMap:
+          name: waas-logstash-pipeline-config
+      - name: logstash-custom-pipeline-volume
+        configMap:
+          name: waas-logstash-custom-pipeline-config
+      - name: logstash-settings-volume
+        emptyDir:
+            {{- toYaml .Values.volumeCfg | nindent 10 }}
+      - name: logstash-data-volume
+        emptyDir:
+          {{- toYaml .Values.volumeData | nindent 10 }}
+      - name: enrich-volume
+        emptyDir:
+          {{- toYaml .Values.volumeEnrich | nindent 10 }}
+      {{- /* logstash server TLS volumes */}}
+      {{- with .Values.tls.server }}
+        {{- if eq .enabled true -}}
+          {{- with .volumes}}
+            {{- toYaml . | nindent 6 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if (default .Values.global.elasticsearch.enabled true) }}
+      {{- /* logstash elasticsearch client TLS volumes */}}
+      {{- with .Values.tls.clients.elasticsearch }}
+        {{- if eq .verify true }}
+          {{- with .volumes}}
+            {{- toYaml . | nindent 6 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- /* extraVolumes */}}
+      {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 6 }}
+      {{- end }}
+  {{- end }}

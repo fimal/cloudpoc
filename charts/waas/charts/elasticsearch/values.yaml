@@ -1,0 +1,214 @@
+image:
+  registry:
+  version:
+enabled: true
+nodePort: 1
+replicaCount: 3
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+# create k8s secret for credentials
+credentialSecrets: true
+
+# how to store the ElasticSearch data?
+persistentStorage:
+  # can be one of none(default), azure, aws, google, openshift, longhorn, kind or custom
+  # none means elasticsearch data will be stored in an emptyDir volume, which will not persist.
+  type: none
+  size: 5Gi
+  # when using persistent type 'custom' you can also change the storage class name from the default standard
+  className: standard
+
+# Volume size limit for configuration: /usr/share/elasticsearch/settings (where keystore is created)
+volumeCfg: {}
+
+# Volume size limit for /tmp (for probe, jvm hsperfdata and some geo db temp files)
+volumeTmp: {}
+
+# Volume size limit for /usr/share/elasticsearch/logs ( gc logs)
+# By default, Elasticsearch enables GC logs. These are configured in jvm.options and default to the same default location as the Elasticsearch logs.
+# The default configuration rotates the logs every 64 MB and can consume up to 2 GB of disk space.
+volumeLogs:
+  {}
+  #sizeLimit: 2Gi
+
+# VolumeBindingMode in the storage class: WaitForFirstConsumer - will delay the binding and provisioning of a persistent volume until a pod is created.
+volumeBindingMode: WaitForFirstConsumer
+
+# elastic search mmap counts
+# true - run sysctl as root in initContainer
+# false - disable memory mapping (default)
+# Note - to support running this init container, the container must run with
+# - a readwrite file system
+# - a privileged user (root/uid+gid 0)
+# - pod securityContext runAsNonRoot=false
+configureMmap: false
+
+#configuration elasticsearch directory
+ES_PATH_CONF: /usr/share/elasticsearch/settings
+
+elasticsearchExtraEnv: 
+  #to change default probe destination to localhost use
+  #- name: "ELASTIC_SERVICE": 
+  #  value: "https://localhost:9200"
+
+# ElasticSearch JVM memory size
+# how many processors should ElasticSearch use?
+processors: 4
+# thread_pool.write.queue_size
+thread_pool_write_queue_size: 1000
+# thread_pool.write.size
+thread_pool_write_size: 1
+# indices.memory.index_buffer_size
+indices_memory_index_buffer_size: 50%
+
+nodeSelector: {}
+tolerations: []
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: component
+                operator: In
+                values:
+                  - waas-elasticsearch-container
+          topologyKey: kubernetes.io/hostname
+
+## settings for specific containers
+containers:
+  initSysctl1:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      privileged: true
+      runAsUser: 0
+      runAsGroup: 0
+      readOnlyRootFilesystem: false
+  elasticsearch:
+    registry:
+    version:
+    # Below memory configuration is not advisable to remove
+    # as elasticsearch uses them for JVM memory allocation limits.
+    # By default minimum 2GB is recommended.
+    resources: 
+      limits:
+        memory: 2G
+      requests:
+        memory: 2G
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+    # NOTE : Overriding any previous/default ES_JAVA_OPS settings
+    # redirect GC logs to stderr to enable seeing them in pod log
+    es_java_opts: " -Xlog:disable -Xlog:gc*=info,safepoint*=warning:stderr:utctime,level,pid,tags"
+  licenseMeter:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+
+tls:
+  server:
+    # transport TLS between elastic nodes
+    transport:
+      # NOTE all file locations are relative to ES_PATH_CONF
+      # certificate file location, required
+      certificate: "{{ .Values.ES_PATH_CONF }}/transport/server/tls.crt"
+      # key file location, required
+      key: "{{ .Values.ES_PATH_CONF }}/transport/server/tls.key"
+      # ca certificate file location
+      ca: "{{ .Values.ES_PATH_CONF }}/ca/ca.crt"
+    # http TLS between elastic and users
+    http:
+      # NOTE all file locations are relative to ES_PATH_CONF
+      # certificate file location, required
+      certificate: "{{ .Values.ES_PATH_CONF }}/http/server/tls.crt"
+      # key file location, required
+      key: "{{ .Values.ES_PATH_CONF }}/http/server/tls.key"
+      # ca certificate file location
+      ca: "{{ .Values.ES_PATH_CONF }}/ca/ca.crt"
+    mounts: |-
+      # NOTE all mount paths must be under ES_PATH_CONF
+      - name: ca-volume
+        mountPath: "{{ .Values.ES_PATH_CONF }}/ca"
+      - name: transport-secret-server-volume
+        mountPath: "{{ .Values.ES_PATH_CONF }}/transport/server"
+      - name: http-secret-server-volume
+        mountPath: "{{ .Values.ES_PATH_CONF }}/http/server"
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: ca-volume
+        configMap:
+          name: waas-ca-config
+      - name: transport-secret-server-volume
+        secret:
+          secretName: waas-esdiscovery-server-secret
+      - name: http-secret-server-volume
+        secret:
+          secretName: waas-esqueries-server-secret
+  clients:
+    #CronJob responsible for license metering operation - which requires access to ES
+    #bellow is to provide CA cerfiticate to the cronjob
+    licenseMeter:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # ca certificate file location, not mandatory
+      ca: "{{ .Values.ES_PATH_CONF }}/ca/ca.crt"
+      mounts: |-
+        - name: ca-volume
+          mountPath: "{{ .Values.ES_PATH_CONF }}/ca"
+      #Volume mounts containing ca certificate
+      volumes:
+        - name: ca-volume
+          configMap:
+            name: waas-ca-config
+
+# extra settings
+# ---------------------------
+# add extra annotations
+# extraAnnotations:
+
+# add extra labels
+# labels:
+
+# add extra containers
+# extraContainers:
+
+# add extra init containers
+# extraInitContainers:
+
+# extra volumes
+# extraVolumes:
+
+# elasticsearch service port name prefixes to use for istio, defaults to https
+# global:
+#   elasticsearch:
+#     serviceDiscovery:
+#       appProtocol: https
+#     serviceExposed:
+#       appProtocol: https

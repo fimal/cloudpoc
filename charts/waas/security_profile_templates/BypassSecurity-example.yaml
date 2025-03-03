@@ -1,0 +1,25 @@
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  annotations:
+  name: kwaf-bypass-security-profile
+  namespace: default
+spec:
+  policies:
+  - classifiers:
+    - hostname: '*'
+      id: example_app_classifier
+      path:
+        operand: Prefix
+        value: /
+      protectionId: bypass_protection
+    name: BypassSecurityPolicy
+    operatorEmail: support@example.com
+    protections:
+    - expressions:
+        opMode: Bypass
+      id: bypass_protection
+      signatures:
+        opMode: Bypass
+      whitelist:
+        opMode: Bypass

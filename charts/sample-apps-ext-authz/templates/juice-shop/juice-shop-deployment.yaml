@@ -1,0 +1,31 @@
+{{- if .Values.juiceShop }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-juice-shop-deployment
+  labels:
+    app: sample-juice-shop-container
+    waas.radware.com/sample: juice-shop
+spec:
+  selector:
+    matchLabels:
+      app: sample-juice-shop-container
+  template:
+    metadata:
+      labels:
+        app: sample-juice-shop-container
+        waas.radware.com/sample: juice-shop
+    spec:
+      containers:
+        - name: sample-juice-shop
+          image: bkimminich/juice-shop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 3000
+              scheme: HTTP
+{{- end }}

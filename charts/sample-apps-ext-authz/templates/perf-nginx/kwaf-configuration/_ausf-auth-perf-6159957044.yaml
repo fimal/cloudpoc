@@ -1,0 +1,7 @@
+apiVersion: waas.radware.com/v1beta1
+kind: OpenAPI
+metadata:
+  name: ausf-auth-perf-6159957044
+  namespace: test
+spec:
+  hash: f4dface9845e3fa91a45f24afdb5f5d2bfa0e8626aa89574db6010af33028c5a

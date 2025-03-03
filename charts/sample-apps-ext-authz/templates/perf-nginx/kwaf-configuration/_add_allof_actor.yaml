@@ -1,0 +1,12 @@
+apiVersion: waas.radware.com/v1beta1
+kind: Actor
+metadata:
+  name: a-allof
+  namespace: test
+spec:
+  allOf:
+    ids:
+    - name: a-cookie
+      namespace: test
+    - name: a-basic-auth
+      namespace: test

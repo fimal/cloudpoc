@@ -1,0 +1,404 @@
+{{- if .Values.enabled }}
+apiVersion: waas.radware.com/v1beta1
+kind: PatternGroup
+metadata:
+  name: ssrf
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+    - id: ssrf1
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/localhost(?:\/|\?|$)
+        isRegex: true
+    - id: ssrf2
+      description: SSRF violation found - URL with IPv4 in range 127.0.0.0-127.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:127|0+177|0x0*7f)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){3}
+        isRegex: true
+    - id: ssrf3
+      description: SSRF violation found - URL with IPv4 in range 10.0.0.0-10.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:10|0+12|0x0*a)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){3}
+        isRegex: true
+    - id: ssrf4
+      description: SSRF violation found - URL with IPv4 in range 192.168.0.0-192.168.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:192|0+300|0x0*c0)\.(?:168|0+250|0x0*a8)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){2}
+        isRegex: true
+    - id: ssrf5
+      description: SSRF violation found - URL with IPv4 in range 172.16.0.0-172.31.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:172|0+254|0x0*ac)\.(?:1[6-9]|2\d|3[0-1]|0+2[0-7]|0+3[0-7]|0x0*1[\da-f])(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){2}
+        isRegex: true
+    - id: ssrf6
+      description: SSRF violation found - URL with IPv4 in range 169.254.0.0-169.254.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:169|0+251|0x0*a9)\.(?:254|0+376|0x0*fe)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){2}
+        isRegex: true
+    - id: ssrf7-1
+      description: SSRF violation found - URL with IPv6 address [::] 
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher)\:\/\/\[(0{1,4}(:0{1,4}){7}|0{1,4}:(:0{1,4}){1,6}|(0{1,4}:){2}(:0{1,4}){1,5}|(0{1,4}:){3}(:0{1,4}){1,4}|(0{1,4}:){4}(:0{1,4}){1,3}|(0{1,4}:){5}(:0{1,4}){1,2}|(0{1,4}:){6}:0{1,4}|(0{1,4}:){1,6}:|::)\]
+        isRegex: true
+    - id: ssrf7-2
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(0{1,4}(:0{1,4}){7}|0{1,4}:(:0{1,4}){1,6}|(0{1,4}:){2}(:0{1,4}){1,5}|(0{1,4}:){3}(:0{1,4}){1,4}|(0{1,4}:){4}(:0{1,4}){1,3}|(0{1,4}:){5}(:0{1,4}){1,2}|(0{1,4}:){6}:0{1,4}|(0{1,4}:){1,6}:|::)\]
+        isRegex: true
+    - id: ssrf8-1
+      description: SSRF violation found - URL with IPv6 address [::1]
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher)\:\/\/\[((0{1,4}:){7}0{0,3}1|0{1,4}:(:0{1,4}){1,5}:0{0,3}1|(0{1,4}:){2}(:0{1,4}){1,4}:0{0,3}1|(0{1,4}:){3}(:0{1,4}){1,3}:0{0,3}1|(0{1,4}:){4}(:0{1,4}){1,2}:0{0,3}1|(0{1,4}:){5}:0{1,4}:0{0,3}1)\]
+        isRegex: true
+    - id: ssrf8-2
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[((0{1,4}:){7}0{0,3}1|0{1,4}:(:0{1,4}){1,5}:0{0,3}1|(0{1,4}:){2}(:0{1,4}){1,4}:0{0,3}1|(0{1,4}:){3}(:0{1,4}){1,3}:0{0,3}1|(0{1,4}:){4}(:0{1,4}){1,2}:0{0,3}1|(0{1,4}:){5}:0{1,4}:0{0,3}1)\]
+        isRegex: true
+    - id: ssrf8-3
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[((0{1,4}:){1,6}:0{0,3}1|::0{0,3}1)\]
+        isRegex: true
+    - id: ssrf9-1
+      description: SSRF violation found - URL with any Unique Local Unicast Address range - [fc00::] - [fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[((f[cd][0-9a-f]{0,2})(:[0-9a-f]{1,4}){7}|(f[cd][0-9a-f]{0,2}:)(([0-9a-f]{1,4}:){0,6}:|([0-9a-f]{1,4}:){0,5}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){0,4}(:[0-9a-f]{1,4}){1,2}))\]
+        isRegex: true
+    - id: ssrf9-2
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[((f[cd][0-9a-f]{0,2}:)(([0-9a-f]{1,4}:){0,3}(:[0-9a-f]{1,4}){1,3})|([0-9a-f]{1,4}:){0,2}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){0,1}(:[0-9a-f]{1,4}){1,5})\]
+        isRegex: true
+    - id: ssrf9-3
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(f[cd][0-9a-f]{0,2}:)(((:[0-9a-f]{1,4}){1,6})|((:[0-9a-f]{1,4}){1,6}|:))\]
+        isRegex: true
+    - id: ssrf10-1
+      description: SSRF violation found - URL with any Link-Local IPv6 address range [fe80::] - [febff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[((fe[89ab][0-9a-f]{0,1})(:[0-9a-f]{1,4}){7}|(fe[89ab][0-9a-f]{0,1}:)(([0-9a-f]{1,4}:){0,6}:|([0-9a-f]{1,4}:){0,5}:[0-9a-f]{1,4}))\]
+        isRegex: true
+    - id: ssrf10-2
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(fe[89ab][0-9a-f]{0,1}:)(([0-9a-f]{1,4}:){0,4}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){0,3}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){0,2}(:[0-9a-f]{1,4}){1,4})\]
+        isRegex: true
+    - id: ssrf10-3
+      description: SSRF violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(fe[89ab][0-9a-f]{0,1}:)(([0-9a-f]{1,4}:){0,1}(:[0-9a-f]{1,4}){1,5}|((:[0-9a-f]{1,4}){1,6})|((:[0-9a-f]{1,4}){1,6}|:))\]
+        isRegex: true
+    - id: ssrf11
+      description: SSRF violation found - URL with hostname that ends with .local
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/.*\.local(?:\/|\?|$)
+        isRegex: true
+    - id: ssrf12
+      description: SSRF violation found - URL with hostname that ends with .arpa 
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/.*\.arpa(?:\/|\?|$)
+        isRegex: true
+    - id: ssrf13
+      description: SSRF violation found - URL with hostname that ends with .internal 
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/.*\.internal(?:\/|\?|$)
+        isRegex: true  
+    - id: ssrf14
+      description:  SSRF violation found - k8s API server access
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: https\:\/\/kubernetes.default.svc(?:\.|\/|\?|$)
+        isRegex: true
+    - id: ssrf15
+      description:  SSRF violation found - URL with IPv4 in octal presentation in range 127.0.0.0-127.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0+?177[0-7]{8}
+        isRegex: true
+    - id: ssrf16
+      description:  SSRF violation found - URL with IPv4 in octal presentation in range 10.0.0.0-10.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0+?12[0-7]{8}
+        isRegex: true
+    - id: ssrf17
+      description:  SSRF violation found - URL with IPv4 in octal presentation in range 192.168.0.0-192.168.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0+?30052[0-1][0-7]{5}
+        isRegex: true
+    - id: ssrf18
+      description:  SSRF violation found - URL with IPv4 in octal presentation in range 172.16.0.0-172.31.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0+?2540[4-7][0-7]{6}
+        isRegex: true
+    - id: ssrf19
+      description:  SSRF violation found - URL with IPv4 in octal presentation in range 169.254.0.0-169.254.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0+?25177[4-5][0-7]{5}
+        isRegex: true
+    - id: ssrf20
+      description:  SSRF violation found - URL with IPv4 in decimal presentation in range 127.0.0.0-127.255.255.254
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/21(?:3[1-9][\d{6}|30[8-9]\d{5}|307[1-9]\d{4}|3070[7-9]\d{3}|30706[5-9]\d{2}|307064[4-9]\d|3070643[2-9]|4[0-6]\d{6}|47[0-3]\d{5}|474[0-7]\d{4}|4748[0-2]\d{3}|47483[0-5]\d{2}|474836[0-3]\d|4748364[0-6])
+        isRegex: true
+    - id: ssrf21
+      description:  SSRF violation found - URL with IPv4 in decimal presentation in range 10.0.0.0-10.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/1(?:6[8-9]\d{6}|67[8-9]\d{5}|677[8-9]\d{4}|6777[3-9]\d{3}|67772[2-9]\d{2}|677721[7-9]\d|6777216\d|7\d{7}|8[0-3]\d{6}|84[0-4]\d{5}|845[0-3]\d{4}|8454[0-8]\d{3}|84549[0-2]\d{2}|845493[0-6]\d|8454937[0-5])
+        isRegex: true
+    - id: ssrf22
+      description:  SSRF violation found - URL with IPv4 in decimal presentation in range 192.168.0.0-192.168.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/3232(?:2[4-9]\d{4}|23[6-9]\d{3}|235[6-9]\d{2}|2355[3-9]\d|23552\d|300\d{3}|3010[0-4]\d|30105[0-5])
+        isRegex: true
+    - id: ssrf23
+      description:  SSRF violation found - URL with IPv4 in decimal presentation in range 172.16.0.0-172.31.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/288(?:6[8-9]\d{5}|67[3-9]\d{4}|6729[8-9]\d{2}|67297[3-9]\d|672972[8-9]|7[0-6]\d{5}|77[0-6]\d{4}|777[0-7]\d{3}|7778[0-2]\d{2}|777830[0-3])
+        isRegex: true
+    - id: ssrf24
+      description:  SSRF violation found - URL with IPv4 in decimal presentation in range 169.254.0.0-169.254.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/285(?:199[6-9]\d{3}|1995[7-9]\d{2}|19956[5-9]\d|199564[8-9]|20[0-5]\d{4}|2060\d{3}|20610\d{2}|20611[0-7]\d|206118[0-3])
+        isRegex: true
+    - id: ssrf25
+      description:  SSRF violation found - URL with IPv4 in mixed IPv6 & IPv4 presentation in range 127.0.0.0-127.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:(?:127|0+177|0x0*7f)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){3}\]
+        isRegex: true
+    - id: ssrf26
+      description:  SSRF violation found - URL with IPv4 in mixed IPv6 & IPv4 presentation in range 10.0.0.0-10.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:(?:10|0+12|0x0*a)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){3}\]
+        isRegex: true
+    - id: ssrf27
+      description:  SSRF violation found - URL with IPv4 in mixed IPv6 & IPv4 presentation in range 192.168.0.0-192.168.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:(?:192|0+300|0x0*c0)\.(?:168|0+250|0x0*a8)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){2}\]
+        isRegex: true
+    - id: ssrf28
+      description:  SSRF violation found - URL with IPv4 in mixed IPv6 & IPv4 presentation in range 172.16.0.0-172.31.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:(?:172|0+254|0x0*ac)\.(?:1[6-9]|2\d|3[0-1]|0+2[0-7]|0+3[0-7]|0x0*1[\da-f])(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){2}
+        isRegex: true
+    - id: ssrf29
+      description:  SSRF violation found - URL with IPv4 in mixed IPv6 & IPv4 presentation in range 169.254.0.0-169.254.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:(?:169|0+251|0x0*a9)\.(?:254|0+376|0x0*fe)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})){2}\]
+        isRegex: true
+    - id: ssrf30
+      description:  SSRF violation found - URL with IPv4 in IPv6  presentation in range 127.0.0.0-127.255.255.254
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:7f[a-f\d]{2}:(?:[a-f\d]{0,4}|:)\]
+        isRegex: true
+    - id: ssrf31
+      description:  SSRF violation found - URL with IPv4 in IPv6  presentation in range 10.0.0.0-10.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:0?a[a-f\d]{2}:(?:[a-f\d]{0,4}|:)\]
+        isRegex: true
+    - id: ssrf32
+      description:  SSRF violation found - URL with IPv4 in IPv6  presentation in range 192.168.0.0-192.168.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:c0a8:(?:[a-f\d]{0,4}|:)\]
+        isRegex: true
+    - id: ssrf33
+      description:  SSRF violation found - URL with IPv4 in IPv6  presentation in range 172.16.0.0-172.31.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:ac1[a-f\d]:(?:[a-f\d]{0,4}|:)\]
+        isRegex: true
+    - id: ssrf34
+      description:  SSRF violation found - URL with IPv4 in IPv6  presentation in range 169.254.0.0-169.254.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/\[(?::(?::0{1,4}){0,4}:|(?:(?:0{1,4}:)(?::0{1,4}){0,3}:)|(?:(?:0{1,4}:){2}(?::0{1,4}){0,2}:)|(?:(?:0{1,4}:){3}(?::0{1,4}){0,1}:)|(?:(?:0{1,4}:){4}:)|(?:(?:0{1,4}:){5}))ffff:a9fe:(?:[a-f\d]{0,4}|:)\]
+        isRegex: true
+    - id: ssrf35
+      description:  SSRF violation found - URL with IPv4 in hexadecimal presentation in range 127.0.0.0-127.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0x0*7f[\da-f]{6}
+        isRegex: true
+    - id: ssrf36
+      description:  SSRF violation found - URL with IPv4 in hexadecimal presentation in range 10.0.0.0-10.255.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0x0*a[\da-f]{6}
+        isRegex: true
+    - id: ssrf37
+      description:  SSRF violation found - URL with IPv4 in hexadecimal presentation in range 192.168.0.0-192.168.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0x0*c0a8[\da-f]{4}
+        isRegex: true
+    - id: ssrf38
+      description:  SSRF violation found - URL with IPv4 in hexadecimal presentation in range 172.16.0.0-172.31.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0x0*ac1[\da-f]{5}
+        isRegex: true
+    - id: ssrf39
+      description:  SSRF violation found - URL with IPv4 in hexadecimal presentation in range 169.254.0.0-169.254.255.255
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/0x0*a9fe[\da-f]{4}
+        isRegex: true
+    - id: ssrf40
+      description:  SSRF violation found - URL with IPv4 in <octet1>.<octet2>.<word> format in the range 127.0.0-127.255.65535 (eq 127.0.0.0-127.255.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:127|0+177|0x0*7f)\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})\.(?:6553[0-5]|655[0-2]\d{0,1}|65[0-4]\d{0,2}|6[0-4]\d{0,3}|[1-5]\d{0,4}|[1-9]\d{0,3}|0+(?:1[0-7]{0,5}|[0-7]{1,5})|0x0*[\da-f]{1,4})
+        isRegex: true
+    - id: ssrf41
+      description: SSRF violation found - URL with IPv4 in <octet1>.<octet2>.<word> format in the range 10.0.0-10.255.65535 (eq 10.0.0.0-10.255.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:10|0+12|0x0*a)\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d|0+[1-3]?[0-7]{0,2}|0x0*[\da-f]{1,2})\.(?:6553[0-5]|655[0-2]\d{0,1}|65[0-4]\d{0,2}|6[0-4]\d{0,3}|[1-5]\d{0,4}|[1-9]\d{0,3}|0+(?:1[0-7]{0,5}|[0-7]{1,5})|0x0*[\da-f]{1,4})
+        isRegex: true
+    - id: ssrf42
+      description: SSRF violation found - URL with IPv4 in <octet1>.<octet2>.<word> format in the range 192.168.0-192.168.65535 (eq 192.168.0.0-192.168.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:192|0+300|0x0*c0)\.(?:168|0+250|0x0*a8)\.(?:6553[0-5]|655[0-2]\d{0,1}|65[0-4]\d{0,2}|6[0-4]\d{0,3}|[1-5]\d{0,4}|[1-9]\d{0,3}|0+(?:1[0-7]{0,5}|[0-7]{1,5})|0x0*[\da-f]{1,4})
+        isRegex: true
+    - id: ssrf43
+      description: SSRF violation found - URL with IPv4 in <octet1>.<octet2>.<word> format in the range 172.16.0-172.31.65535 (eq 172.16.0.0-172.31.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:172|0+254|0x0*ac)\.(?:1[6-9]|2\d|3[0-1]|0+2[0-7]|0+3[0-7]|0x0*1[\da-f])\.(?:6553[0-5]|655[0-2]\d{0,1}|65[0-4]\d{0,2}|6[0-4]\d{0,3}|[1-5]\d{0,4}|[1-9]\d{0,3}|0+(?:1[0-7]{0,5}|[0-7]{1,5})|0x0*[\da-f]{1,4})
+        isRegex: true
+    - id: ssrf44
+      description: SSRF violation found - URL with IPv4 in <octet1>.<octet2>.<word> format in the range 169.254.0-169.254.65535 (eq 169.254.0.0-169.254.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:169|0+251|0x0*a9)\.(?:254|0+376|0x0*fe)\.(?:6553[0-5]|655[0-2]\d{0,1}|65[0-4]\d{0,2}|6[0-4]\d{0,3}|[1-5]\d{0,4}|[1-9]\d{0,3}|0+(?:1[0-7]{0,5}|[0-7]{1,5})|0x0*[\da-f]{1,4})
+        isRegex: true
+    - id: ssrf45
+      description:  SSRF violation found - URL with IPv4 in <octet>.<word-of-3-octets> format in the range 127.0-127.16777215 (eq 127.0.0.0-127.255.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:127|0+177|0x0*7f)\.(?:1677721[0-5]|1677720\d|16777[0-1]\d{0,2}|1677[0-6]\d{0,3}|167[0-6]\d{0,4}|16[0-6]\d{0,5}|1[0-5]\d{0,6}|[1-9]\d{0,6}|0+[0-7]{0,8}|0x0*[\da-f]{0,6})
+        isRegex: true
+    - id: ssrf46
+      description: SSRF violation found -  URL with IPv4 in <octet>.<word-of-3-octets> format in the range 10.0-10.16777215 (eq 10.0.0.0-10.255.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:10|0+12|0x0*a)\.(?:1677721[0-5]|1677720\d|16777[0-1]\d{0,2}|1677[0-6]\d{0,3}|167[0-6]\d{0,4}|16[0-6]\d{0,5}|1[0-5]\d{0,6}|[1-9]\d{0,6}|0+[0-7]{0,8}|0x0*[\da-f]{0,6})
+        isRegex: true
+    - id: ssrf47
+      description: SSRF violation found -  URL with IPv4 in <octet>.<word-of-3-octets> format in the range 192.11010048-192.11075583 (eq 192.168.0.0-192.168.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:192|0+300|0x0*c0)\.(?:110(?:1[1-9]\d{3}|10[1-9]\d{2}|100[5-9]\d|1004[8-9]|[2-6]\d{4}|7[0-4]\d{3}|75[0-4]\d{2}|755[0-7]\d|7558[0-3])|0+52(?:[0-1][0-7]{5})|0x0*a8[\da-f]{4})
+        isRegex: true 
+    - id: ssrf48
+      description: SSRF violation found -  URL with IPv4 in <octet>.<word-of-3-octets> format in the range 172.1048576-172.2097151 (eq 172.16.0.0-172.31.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:172|0+254|0x0*ac)\.(?:1[1-9]\d{5}|10[5-9]\d{4}|1049\d{3}|1048[6-9]\d{2}|10485[8-9]\d|104857[6-9]|20[0-8]\d{4}|209[0-6]\d{3}|20970\d{2}|20971[0-4]\d|209715[0-1]|0+[4-7][0-7]{6}|0x0*1[\da-f]{5})
+        isRegex: true 
+    - id: ssrf49
+      description: SSRF violation found -  URL with IPv4 in <octet>.<word-of-3-octets> format in the range 169.16646144-169.16711679 (eq 169.254.0.0-169.254.255.255)
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: (?:http|https|ftp|sftp|tftp|dict|gopher|ldap|data|php|ssh2|netdoc|file|rmi)\:\/\/(?:169|0+251|0x0*a9)\.(?:16(?:6[5-9]\d{4}|64[7-9]\d{3}|646[2-9]\d{2}|6461[5-9]\d|64614[4-9]|70\d{4}|710\d{3}|711[0-5]\d{2}|7116[0-7]\d)|0+77[4-5][0-7]{5}|0x0*fe[\da-f]{4})
+        isRegex: true
+{{- end }}

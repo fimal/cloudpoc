@@ -1,0 +1,30 @@
+{{- if and .Values.juiceShop (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  juice-shop-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: juice-shop-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: juice-shop
+      expressions:
+        opMode: Active
+      signatures:
+        opMode: Active
+        advExcludes:
+        - ruleIDs:
+          - 9281
+          zone: uri
+    classifiers:
+    - protectionId: juice-shop
+      hostname: '*'
+      id: juice-shop-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}

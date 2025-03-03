@@ -1,0 +1,20 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true)}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-elasticsearch-templates-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+  waas-access.json: |-
+  {{- tpl (.Files.Get "files/waas-access.json") $ | nindent 4 }}
+  waas-forensics.json: |-
+  {{- tpl (.Files.Get "files/waas-forensics.json") $ | nindent 4 }}
+  waas-request-data.json: |-
+  {{- tpl (.Files.Get "files/waas-request-data.json") $ | nindent 4 }}
+  waas-metrics.json: |-
+  {{- tpl (.Files.Get "files/waas-metrics.json") $ | nindent 4 }}
+{{- end }}

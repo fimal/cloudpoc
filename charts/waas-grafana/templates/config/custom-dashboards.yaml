@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-grafana-custom-dashboards-config
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+data:
+  envoy-dashboard-custom-6693.json : |-
+{{ .Files.Get "files/envoy-dashboard-custom-6693.json" | indent 4 }}
+  envoy-dashboard-custom-7253.json : |-
+{{ .Files.Get "files/envoy-dashboard-custom-7253.json" | indent 4 }}
+  waas-dashboard.json : |-
+{{ .Files.Get "files/waas-dashboard.json" | indent 4 }}
+
+{{- if and (eq .Values.systemMode "ext-authz") (eq .Values.gatherK8sPerformanceMetrics true) }}
+  waas-performance-ext-authz-dashboard.json: |-
+{{ .Files.Get "files/waas-performance-ext-authz-dashboard.json" | indent 4 }}
+{{- end }}

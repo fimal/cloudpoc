@@ -1,0 +1,169 @@
+image:
+  registry:
+  version:
+enabled: true
+nodePort: 17
+replicaCount: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+# if isHeadless is true that means that the type is ClusterIP with value None
+# if both are true- set to default- ClusterIP with value None
+# if isHeadless is false and useNodePort is true- the type will be NodePort
+# if both are false then the type define by the global template
+useNodePort: false
+isHeadless: false
+
+# redis connection settings
+
+# size of the redis connection pool
+# redisConnectionPoolSize: 10
+
+# redis timeouts in miliseconds for the rater's communication with redis
+# connect timeout determins the deadline to set when connecting or reconnecting to redis
+RedisConnectTimeout: 50
+# read timeout determins the deadline to set when reading from a redis connection
+RedisReadTimeout: 500
+# write timeout determins the deadline to set when writing to a redis connection
+RedisWriteTimeout: 500
+# context timeout sets a deadline for a full redis action (may include read write and/or re/connect)
+# redisContextTimeout: 1000
+
+## settings for specific containers
+containers:
+  rater:
+    registry:
+    version:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+    resources: {}
+
+tls:
+  server:
+    # servers will accept HTTPS or HTTP connections
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # client authentication using client certificate may be required
+    # allowed values: true, false
+    # default value: do not require client authentication
+    clientAuth: true
+    # certificate file location, required
+    certificate: /etc/rate-limiter/server/tls.crt
+    # key file location, required
+    key: /etc/rate-limiter/server/tls.key
+    # ca certificate file location, not required if clientAuth=false
+    ca: /etc/rate-limiter/ca/ca.crt
+    # verify server upon connection
+    # allowed values: true, false
+    # default value: verify server identity
+    verify: true
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: rate-limiter-server-volume
+        mountPath: /etc/rate-limiter/server
+      - name: ca-volume
+        mountPath: /etc/rate-limiter/ca
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: rate-limiter-server-volume
+        secret:
+          secretName: waas-rate-limiter-server-secret
+      - name: ca-volume
+        configMap:
+          name: waas-ca-config
+  clients:
+    rateLimiter:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/rate-limiter/client/tls/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/rate-limiter/client/tls/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/rate-limiter/client/ca/ca.crt
+      # verify server upn connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name:
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: rate-limiter-client-volume
+          mountPath: /etc/rate-limiter/client/tls
+        - name: rate-limiter-ca-volume
+          mountPath: /etc/rate-limiter/client/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: rate-limiter-client-volume
+          secret:
+            secretName: waas-rate-limiter-client-secret
+        - name: rate-limiter-ca-volume
+          configMap:
+            name: waas-ca-config
+    redis:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/redis/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/redis/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/redis/ca/ca.crt
+      # verify server upn connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name:
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: redis-client-volume
+          mountPath: /etc/redis/client
+        - name: redis-ca-volume
+          mountPath: /etc/redis/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: redis-client-volume
+          secret:
+            secretName: waas-rate-limiter-client-secret
+        - name: redis-ca-volume
+          configMap:
+            name: waas-ca-config
+# activity tracker service port name prefixes to use for istio, defaults to tcp/http
+# global:
+#   ratelimiter:
+#     serviceAppProtocol: tcp
+#     metricServiceAppProtocol: http
+
+# uncomment to add labels to rate-limiter
+# labels:
+
+# uncomment to add annotations to rate-limiter
+# extraAnnotations:

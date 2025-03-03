@@ -1,0 +1,16 @@
+# envoyFilter enforcer service destination
+enforcerUri: "http://waas-enforcer.kwaf.svc"
+clusterName: "outbound|80||waas-enforcer.kwaf.svc.cluster.local"
+
+# bypass ingress mirror destination
+mirror:
+  host: "waas-enforcer.kwaf.svc.cluster.local"
+  port: 80
+
+responseTracking:
+  # to bypass enforcer "proxy" filter use:
+  # authority="waas-rate-limiter.<WAAS-NAMESPACE>"
+  # clusterName="outbound|8081||waas-rate-limiter.<WAAS-NAMESPACE>.svc.cluster.local"
+  # to avoid connectivity issues - make sure authority match actual rater svc
+  authority: waas-rate-limiter.kwaf.svc
+  clusterName: "outbound|9929||waas-enforcer.kwaf.svc.cluster.local"

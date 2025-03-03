@@ -1,0 +1,221 @@
+{{- if (eq .Values.configType "profile") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name: {{ .Values.configName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: apiPolicy
+    operatorEmail: support@radware.com
+    protections:
+    {{- if .Values.nginx }}
+    - id: nginx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.perfNginx }}
+    - id: perf
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.nginxh2c }}
+    - id: nginxh2c
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.bypass }}
+    - id: bypass
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.httpbin }}
+    - id: httpbin
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.grpcx }}
+    - id: grpcx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.bwapp }}
+    - id: bwapp
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.hackazon }}
+    - id: hackazon
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.juiceShop }}
+    - id: juice-shop
+      expressions:
+        opMode: Active
+      signatures:
+        opMode: Active
+        advExcludes:
+        - ruleIDs:
+          - 9281
+          zone: uri
+    {{- end }}
+    {{- if .Values.webgoat }}
+    - id: webgoat
+      signatures:
+        opMode: Passive
+      expressions:
+        opMode: Passive
+    {{- end }}
+    {{- if .Values.vampi }}
+    - id: vampi
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    {{- if .Values.crapi }}
+    - id: crapi-web
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: crapi-mail
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: crapi-identity
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    {{- end }}
+    classifiers:
+    {{- if .Values.juiceShop }}
+    - protectionId: juice-shop
+      hostname: juice-shop.kwaf-demo.tes*
+      id: juice-shop-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.nginx }}
+    - protectionId: nginx
+      hostname: 'nginx.kwaf-demo.tes*'
+      id: nginx-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.perfNginx }}
+    - protectionId: perf
+      hostname: '*.kwaf-demo.tes*'
+      id: perf-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.nginxh2c }}
+    - protectionId: nginxh2c
+      hostname: 'nginxh2c.kwaf-demo.tes*'
+      id: nginxh2c-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.bypass }}
+    - protectionId: bypass
+      hostname: 'bypass.kwaf-demo.tes*'
+      id: bypass-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.bwapp }}
+    - protectionId: bwapp
+      hostname: 'bwapp.kwaf-demo.tes*'
+      id: bwapp-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.httpbin }}
+    - protectionId: httpbin
+      hostname: 'httpbin.kwaf-demo.tes*'
+      id: httpbin-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.hackazon }}
+    - protectionId: hackazon
+      hostname: 'hackazon.kwaf-demo.tes*'
+      id: hackazon-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.grpcx }}
+    - protectionId: grpcx
+      hostname: 'grpcx.kwaf-demo.tes*'
+      id: grpcx-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.webgoat }}
+    - protectionId: webgoat
+      hostname: 'webgoat.kwaf-demo.tes*'
+      id: webgoat-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.vampi }}
+    - protectionId: vampi
+      hostname: 'vampi.kwaf-demo.tes*'
+      id: vampi-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+    {{- if .Values.crapi }}
+    - protectionId: crapi-web
+      hostname: 'crapi-web.kwaf-demo.tes*'
+      id: crapi-web-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: crapi-mail
+      hostname: 'crapi-mail.kwaf-demo.tes*'
+      id: crapi-mail-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: crapi-identity
+      hostname: 'crapi-identity.kwaf-demo.tes*'
+      id: crapi-identity-sample
+      path:
+        operand: Prefix
+        value: /
+    {{- end }}
+{{- end }}

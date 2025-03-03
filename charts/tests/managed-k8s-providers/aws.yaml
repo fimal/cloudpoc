@@ -1,0 +1,46 @@
+# values file used to deploy in aws
+# prerequisites:
+  # 1. install EKS - amazon web services kubernetes cluster
+  # 2. install ECR aws container registry
+
+  # 3. Integrate EKS with ECR, to allow eks to pull images from ecr
+  #    the EKS node group IAM role should already have the required permissions to pull images from ECR,
+  #    if it was created using the template specified in the getting started eith EKS guide
+  #     guide - https://docs.aws.amazon.com/eks/latest/userguide/getting-started-console.html
+  #     template - https://amazon-eks.s3-us-west-2.amazonaws.com/cloudformation/2019-11-15/amazon-eks-nodegroup-role.yaml
+  # 4. set registry and version correctly
+  # 5. run helm install waas -n <<namespace>> ./waas -f tests/managed-k8s-providers/aws.yaml --create-namespace
+ 
+
+global:
+  image:
+    registry: <ECR registry URI>
+    version: :latest
+    imagePullSecret:
+  signaturesImage:
+    registry: <ECR registry URI>
+    version: :latest
+    imagePullSecret:
+
+waas-elasticsearch:
+  enabled: true
+  replicaCount: 1
+  processors: 1
+  persistentStorage:
+    type: aws
+    size: 500Mi
+  # Minimum 2GB required.  
+  containers:
+    elasticsearch:
+      resources:
+        limits:
+          memory: 2G
+        requests:
+          memory: 2G  
+          
+waas-logstash:
+  enabled: true
+  replicaCount: 1
+  jvmMemorySize: 2g
+  batchSize: 100
+  workers: 2

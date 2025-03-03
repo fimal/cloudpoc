@@ -1,0 +1,12 @@
+containers:
+  prometheus:
+    imagePath: reg.psradware.com/waas/waas-prometheus:1.19.0
+    pullPolicy: Always
+  pushgateway:
+    imagePath: prom/pushgateway
+    pullPolicy: Always
+# Service types are:  LoadBalancer | NodePort | ClusterIP
+serviceType: NodePort
+# if NodePort is used, please define nodePort number
+promNodePort: 31007
+pushNodePort: 31019

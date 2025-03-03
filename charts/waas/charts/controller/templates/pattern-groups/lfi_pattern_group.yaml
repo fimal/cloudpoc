@@ -1,0 +1,649 @@
+{{- if .Values.enabled }}
+apiVersion: waas.radware.com/v1beta1
+kind: PatternGroup
+metadata:
+  name: lfi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+    - id: lfi1
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: file\:\/\/
+        isRegex: true
+    - id: lfi2
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.gif$|\.gif\?
+        isRegex: true
+    - id: lfi3
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.jpg$|\.jpg\?
+        isRegex: true
+    - id: lfi4
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.swf$|\.swf\?
+        isRegex: true
+    - id: lfi5
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.mp3$|\.mp3\?
+        isRegex: true
+    - id: lfi6
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.mp4$|\.mp4\?
+        isRegex: true
+    - id: lfi7
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.asf$|\.asf\?
+        isRegex: true
+    - id: lfi8
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.wmv$|\.wmv\?
+        isRegex: true
+    - id: lfi9
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.flv$|\.flv\?
+        isRegex: true
+    - id: lfi10
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.wma$|\.wma\?
+        isRegex: true
+    - id: lfi11
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.avi$|\.avi\?
+        isRegex: true
+    - id: lfi12
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.bmp$|\.bmp\?
+        isRegex: true
+    - id: lfi13
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ra$|\.ra\?
+        isRegex: true
+    - id: lfi14
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.mov$|\.mov\?
+        isRegex: true
+    - id: lfi15
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.rm$|\.rm\?
+        isRegex: true
+    - id: lfi16
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.mgi$|\.mgi\?
+        isRegex: true
+    - id: lfi17
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ma2$|\.ma2\?
+        isRegex: true
+    - id: lfi18
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.mpeg$|\.mpeg\?
+        isRegex: true
+    - id: lfi19
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ma3$|\.ma3\?
+        isRegex: true
+    - id: lfi20
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.mmf$|\.mmf\?
+        isRegex: true
+    - id: lfi21
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.jpeg$|\.jpeg\?
+        isRegex: true
+    - id: lfi22
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.mpa$|\.mpa\?
+        isRegex: true
+    - id: lfi23
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ico$|\.ico\?
+        isRegex: true
+    - id: lfi24
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.png$|\.png\?
+        isRegex: true
+    - id: lfi25
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.css$|\.css\?
+        isRegex: true
+    - id: lfi26
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.js$|\.js\?
+        isRegex: true
+    - id: lfi27
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.pdf$|\.pdf\?
+        isRegex: true
+    - id: lfi28
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ttf$|\.ttf\?
+        isRegex: true
+    - id: lfi29
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.woff$|\.woff\?
+        isRegex: true
+    - id: lfi30
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.txt$|\.txt\?
+        isRegex: true
+    - id: lfi31
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.cfg$|\.cfg\?
+        isRegex: true
+    - id: lfi32
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.config$|\.config\?
+        isRegex: true
+    - id: lfi33
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.woff2$|\.woff2\?
+        isRegex: true
+    - id: lfi34
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ascx$|\.ascx\?
+        isRegex: true
+    - id: lfi35
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.asp$|\.asp\?
+        isRegex: true
+    - id: lfi36
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.aspx$|\.aspx\?
+        isRegex: true
+    - id: lfi37
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.au3$|\.au3\?
+        isRegex: true
+    - id: lfi38
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.bat$|\.bat\?
+        isRegex: true
+    - id: lfi39
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.bas$|\.bas\?
+        isRegex: true
+    - id: lfi40
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.csh$|\.csh\?
+        isRegex: true
+    - id: lfi41
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.cmd$|\.cmd\?
+        isRegex: true
+    - id: lfi42
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.do$|\.do\?
+        isRegex: true
+    - id: lfi43
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ece$|\.ece\?
+        isRegex: true
+    - id: lfi44
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.egg$|\.egg\?
+        isRegex: true
+    - id: lfi45
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.exe$|\.exe\?
+        isRegex: true
+    - id: lfi46
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.hta$|\.hta\?
+        isRegex: true
+    - id: lfi47
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ici$|\.ici\?
+        isRegex: true
+    - id: lfi48
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.itcl$|\.itcl\?
+        isRegex: true
+    - id: lfi49
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.js$|\.js\?
+        isRegex: true
+    - id: lfi50
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.jsfl$|\.jsfl\?
+        isRegex: true
+    - id: lfi51
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.jsp$|\.jsp\?
+        isRegex: true
+    - id: lfi52
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.lua$|\.lua\?
+        isRegex: true
+    - id: lfi53
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.m$|\.m\?
+        isRegex: true
+    - id: lfi54
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ncf$|\.ncf\?
+        isRegex: true
+    - id: lfi55
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.php$|\.php\?
+        isRegex: true
+    - id: lfi56
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.pl$|\.pl\?
+        isRegex: true
+    - id: lfi57
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.pm$|\.pm\?
+        isRegex: true
+    - id: lfi58
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ps1$|\.ps1\?
+        isRegex: true
+    - id: lfi59
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ps1xml$|\.ps1xml\?
+        isRegex: true
+    - id: lfi60
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.psc1$|\.psc1\?
+        isRegex: true
+    - id: lfi61
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.psd1$|\.psd1\?
+        isRegex: true
+    - id: lfi62
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.psm1$|\.psm1\?
+        isRegex: true
+    - id: lfi63
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.py$|\.py\?
+        isRegex: true
+    - id: lfi64
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.pyc$|\.pyc\?
+        isRegex: true
+    - id: lfi65
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.pyo$|\.pyo\?
+        isRegex: true
+    - id: lfi66
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.rb$|\.rb\?
+        isRegex: true
+    - id: lfi67
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.scpt$|\.scpt\?
+        isRegex: true
+    - id: lfi68
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.sh$|\.sh\?
+        isRegex: true
+    - id: lfi69
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.svc$|\.svc\?
+        isRegex: true
+    - id: lfi70
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.tcl$|\.tcl\?
+        isRegex: true
+    - id: lfi71
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.tcsh$|\.tcsh\?
+        isRegex: true
+    - id: lfi72
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.vbs$|\.vbs\?
+        isRegex: true
+    - id: lfi73
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.wsdl$|\.wsdl\?
+        isRegex: true
+    - id: lfi74
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.sql$|\.sql\?
+        isRegex: true
+    - id: lfi75
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.sqlite$|\.sqlite\?
+        isRegex: true
+    - id: lfi76
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: zip\:\/\/
+        isRegex: true
+    - id: lfi77
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: phar\:\/\/
+        isRegex: true
+    - id: lfi78
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: expect\:\/\/
+        isRegex: true
+    - id: lfi79
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: php\:\/\/input
+        isRegex: true
+    - id: lfi80
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: php\:\/\/filter
+        isRegex: true
+    - id: lfi81
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: zlib\:\/\/
+        isRegex: true
+    - id: lfi82
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: glob\:\/\/
+        isRegex: true
+    - id: lfi83
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: rar\:\/\/
+        isRegex: true
+    - id: lfi84
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ogg\:\/\/
+        isRegex: true
+    - id: lfi85
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.conf$|\.conf\?
+        isRegex: true
+    - id: lfi86
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.log$|\.log\?
+        isRegex: true
+    - id: lfi87
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.ini$|\.ini\?
+        isRegex: true
+    - id: lfi88
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.xml$|\.xml\?
+        isRegex: true
+    - id: lfi89
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.html$|\.html\?
+        isRegex: true
+    - id: lfi90
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.err$|\.err\?
+        isRegex: true
+    - id: lfi91
+      description: LFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: \.webp$|\.webp\?
+        isRegex: true
+{{- end }}

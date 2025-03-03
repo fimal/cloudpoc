@@ -1,0 +1,16 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-elasticsearch-ilm-options-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    kwaf-configmap-validation: enable
+    kwaf-configmap-type: ilm-policy
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+data:
+  ilm.options: |-
+{{ include "waas.elasticStorageManagement.ilmOpts" . | indent 4 }}
+{{- end }}

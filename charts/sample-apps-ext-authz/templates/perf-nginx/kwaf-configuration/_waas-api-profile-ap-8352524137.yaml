@@ -1,0 +1,107 @@
+apiVersion: waas.radware.com/v1beta1
+kind: APISpec
+metadata:
+  name: waas-api-profile-ap-8352524137
+  namespace: test
+spec:
+  openAPINamespace: test
+  openapi: ausf-auth-perf-7814712399
+  patch: |
+    [{
+            "op": "add",
+            "path": "/paths/~1ue-authentications/get",
+            "value": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }, {
+            "op": "add",
+            "path": "/paths/~1index.html",
+            "value": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    },
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            },
+                            "application/x-www-form-urlencoded": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pattern": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "post": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    },
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            },
+                            "application/xml": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pattern": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            "text/js": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            "application/x-www-form-urlencoded": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pattern": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]

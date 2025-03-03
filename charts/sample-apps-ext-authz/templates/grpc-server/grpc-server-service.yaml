@@ -1,0 +1,17 @@
+{{- if .Values.grpcx }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-grpcx-service
+  labels:
+    waas.radware.com/sample: grpcx
+spec:
+  selector:
+    app: sample-grpcx-container
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 50051
+      name: grpc
+      protocol: TCP
+{{- end }}

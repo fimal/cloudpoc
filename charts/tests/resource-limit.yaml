@@ -1,0 +1,277 @@
+waas-rate-limiter:
+  containers:
+    rater:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-controller:
+  containers:
+    controller:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-elasticsearch:
+  containers:
+    initSysctl1:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    elasticsearch:
+      resources:
+        limits:
+          cpu: "0.7"
+          memory: 2000M
+        requests:
+          cpu: "0.7"
+          memory: 2000M
+waas-enforcer:
+  containers:
+    enforcer:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    logrotate:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    fluentbit:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    enrich:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-events-fetcher:
+  containers:
+    eventsFetcher:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-gui:
+  containers:
+    gui:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    identity:
+      resources:
+        limits:
+          cpu: "0.4"
+          memory: 100M
+        requests:
+          cpu: "0.4"
+          memory: 100M
+    initCreateAuthUsers:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-logstash:
+  containers:
+    logstash:
+      resources:
+        limits:
+          cpu: "0.5"
+          memory: 2000M
+        requests:
+          cpu: "0.5"
+          memory: 2000M
+    enrich:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-postdelete:
+  containers:
+    postdelete:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-preupgrade:
+  containers:
+    preupgrade:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-preinstall:
+  containers:
+    preinstall:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-profiles-crud:
+  containers:
+    profiles:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    enrich:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-redis:
+  containers:
+    init:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    exporter:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    redis:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    redisJob:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+waas-validationcontroller:
+  containers:
+    validationcontroller:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    webhookInstall:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    webhookDelete:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+sample-app:
+  containers:
+    enforcer:
+      resources:
+        limits:
+          cpu: "0.1"
+          memory: 100M
+        requests:
+          cpu: "0.1"
+          memory: 100M
+    logrotate:
+      resources:
+        limits:
+          cpu: "0.05"
+          memory: 100M
+        requests:
+          cpu: "0.05"
+          memory: 100M
+    fluentbit:
+      resources:
+        limits:
+          cpu: "0.05"
+          memory: 100M
+        requests:
+          cpu: "0.05"
+          memory: 100M
+    enrich:
+      resources:
+        limits:
+          cpu: "0.05"
+          memory: 100M
+        requests:
+          cpu: "0.05"
+          memory: 100M
+global:
+  app:
+    resources:
+      limits:
+        cpu: "0.1"
+        memory: 300M
+      requests:
+        cpu: "0.1"
+        memory: 300M

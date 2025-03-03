@@ -1,0 +1,2 @@
+systemMode: ext-authz
+gatherK8sPerformanceMetrics: true

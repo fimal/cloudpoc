@@ -1,0 +1,16 @@
+global:
+  elasticStorageManagement:
+      policy: custom
+      pollInterval: 10s
+      access:
+        maxSize: 1G
+        delete: 2h
+      security:
+        maxSize: 1G
+        delete: 2h
+      requestData:
+        maxSize: 1G
+        delete: 2h
+      system:
+        maxSize: 1G
+        delete: 2h

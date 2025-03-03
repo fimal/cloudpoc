@@ -1,0 +1,33 @@
+waas-enforcer:
+  tls:
+    clients:
+      fluentbit:
+        # default value: verify server identity
+        verify: false
+        volumes:
+          - name: flb-enforcer-client-volume
+            secret:
+              secretName: waas-enforcer-sidecar-client
+          - name: flb-ca-volume
+            configMap:
+              name: waas-ca-config
+      controller:
+        # default value: verify server identity
+        verify: false
+        volumes:
+          - name: enforcer-client-volume
+            secret:
+              secretName: waas-enforcer-sidecar-client
+          - name: ca-volume
+            configMap:
+              name: waas-ca-config
+      rateLimiter:
+        # default value: verify server identity
+        verify: false
+        volumes:
+          - name: rl-enforcer-client-volume
+            secret:
+              secretName: waas-enforcer-sidecar-client
+          - name: rl-ca-volume
+            configMap:
+              name: waas-ca-config

@@ -1,0 +1,36 @@
+{{- if .Values.httpbin }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-httpbin-deployment
+  labels:
+    waas.radware.com/sample: httpbin
+spec:
+  selector:
+    matchLabels:
+      app: sample-httpbin-container
+  template:
+    metadata:
+      labels:
+        app: sample-httpbin-container
+        waas.radware.com/protection: enabled
+    spec:
+      containers:
+        - image: {{ .Values.apps.httpbin.image.registry }}{{ .Values.apps.httpbin.image.version }}
+          imagePullPolicy: {{ .Values.apps.httpbin.image.pullPolicy }}
+          name: sample-httpbin
+          # these are set to null so they are removed from previous releases during upgrade
+          command: null
+          args: null
+          env:
+          - name: HTTPBIN_HOST
+            value: "[::]"
+          - name: HTTPBIN_PORT
+            value: "8080"
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+{{- end }}

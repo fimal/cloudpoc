@@ -1,0 +1,6 @@
+global:
+  elasticStorageManagement:
+      policy: poc
+  systemMode: inline
+  useNodePort: false
+

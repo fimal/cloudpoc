@@ -1,0 +1,6 @@
+apiVersion: v2
+name: waas
+appVersion: "1.19.0"
+description: The parent chart for Radware WAAS
+type: application
+version: 1.19.0

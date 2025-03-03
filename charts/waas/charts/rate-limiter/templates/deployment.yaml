@@ -1,0 +1,242 @@
+{{- if .Values.enabled }}
+{{- $mode := include "waas.redis.mode" .}}
+## mode = {{$mode}}
+{{- $sentinelConnect := .Values.global.redis.sentinelConnect }}
+## sentinelConnect = {{$sentinelConnect}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-rate-limiter-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      configid: waas-rate-limiter-container
+  template:
+    metadata:
+      labels:
+        configid: waas-rate-limiter-container
+        waas-prometheus-service: monitor
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: rater
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.rater.registry }}/waas-rate-limiter{{ include "waas.image.version" . | coalesce .Values.containers.rater.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command:
+            - "/rater"
+            - -v=3
+            - --redis-connect-timeout={{ .Values.RedisConnectTimeout }}
+            - --redis-read-timeout={{ .Values.RedisReadTimeout }}
+            - --redis-write-timeout={{ .Values.RedisWriteTimeout }}
+            {{- if .Values.redisContextTimeout }}
+            - --redis-context-timeout={{ .Values.redisContextTimeout }}
+            {{- end }}
+            {{- if .Values.redisConnectionPoolSize }}
+            - --redis-client-pool-size={{ .Values.redisConnectionPoolSize }}
+            {{- end }}
+            {{- if .Values.global.redis.security.enabled }}
+            - --redis-client-auth={{ .Values.global.redis.security.pass }}
+            {{- end }}
+            - --redis-server-address=waas-redis.{{ .Release.Namespace }}.svc
+            
+            - --rate-limiter-grpc-port={{ .Values.global.ratelimiter.serviceTargetPort | default 8081 }}
+            {{- if eq $mode "clustered" }}
+            - --redis-cluster=true
+            - --redis-server-port={{ .Values.global.redis.ports.servicePort | default 6379 }}
+            {{- else if and (eq $mode "ha") ($sentinelConnect) }}
+            - --redis-sentinel=true
+            - --redis-server-port={{ .Values.global.redis.ports.sentinelPort | default 5000 }}
+            {{- end }}
+        {{- /* redis client TLS settings */}}
+        {{- with .Values.tls.clients.redis }}
+          {{- if eq .enabled true }}
+            - --redis-tls=true
+            {{- if eq .clientAuth true }}
+            - --redis-tls-client-auth=true
+            - --redis-tls-crt-file={{ .clientCertificate }}
+            - --redis-tls-key-file={{ .clientKey }}
+            {{- else }}
+            - --redis-tls-client-auth=false
+            {{- end }}
+            {{- if eq .verify true }}
+            - --redis-tls-verify=true
+            - --redis-tls-ca-file={{ .ca }}
+            {{- else }}
+            - --redis-tls-verify=false
+            {{- end }}
+          {{- else }}
+            - --redis-tls=false
+          {{- end }}
+        {{- end }}
+        {{- /* rate-limiter server TLS settings */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true }}
+            - --rate-limiter-tls=true
+            - --rate-limiter-tls-crt-file={{ .certificate }}
+            - --rate-limiter-tls-key-file={{ .key }}
+            {{- if eq .clientAuth true }}
+            - --rate-limiter-tls-client-auth=true
+            {{- else }}
+            - --rate-limiter-tls-client-auth=false
+            {{- end }}
+            {{- if eq .verify true }}
+            - --rate-limiter-tls-ca-file={{ .ca }}
+            - --rate-limiter-tls-verify=true
+            {{- else }}
+            - --rate-limiter-tls-verify=false
+            {{- end }}
+          {{- else }}
+            - --rate-limiter-tls=false
+          {{- end }}
+        {{- end }}
+          volumeMounts:
+        {{- /* rate limiter server TLS mounts */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* redis client TLS mounts */}}
+        {{- with .Values.tls.clients.redis }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* rate limiter client TLS mounts */}}
+        {{- with .Values.tls.clients.rateLimiter }}
+         {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+         {{- end }}
+        {{- end }}
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            exec:
+              command:
+                - /grpc_health_probe
+                {{- if .Values.global.ipv6Support }}
+                - -addr=[::1]:{{ .Values.global.ratelimiter.servicePort | default 8081 }}
+                {{- else}}
+                - -addr=127.0.0.1:{{ .Values.global.ratelimiter.servicePort | default 8081 }}
+                {{- end }}
+            {{- /* according to tls client settings */}}
+            {{- with .Values.tls.clients.rateLimiter }}
+              {{- if eq .enabled true }}
+                - -tls
+                {{- if eq .clientAuth true }}
+                - -tls-client-cert={{.clientCertificate }}
+                - -tls-client-key={{.clientKey }}
+                {{- end }}
+                {{- if eq .verify true }}
+                - -tls-ca-cert={{ .ca }}
+                - -tls-server-name=waas-rate-limiter.{{ $.Release.Namespace }}.svc
+                {{- else }}
+                - -tls-no-verify
+                {{- end }}
+              {{- else }}
+                - -tls=false
+              {{- end }}
+            {{- end }}
+          livenessProbe:
+            timeoutSeconds: 6
+            failureThreshold: 10
+            successThreshold: 1
+            initialDelaySeconds: 15
+            exec:
+              command:
+                - /grpc_health_probe
+                {{- if .Values.global.ipv6Support }}
+                - -addr=[::1]:{{ .Values.global.ratelimiter.servicePort | default 8081 }}
+                {{- else }}
+                - -addr=127.0.0.1:{{ .Values.global.ratelimiter.servicePort | default 8081 }}
+                {{- end }}
+            {{- /* according to tls client settings */}}
+            {{- with .Values.tls.clients.rateLimiter }}
+              {{- if eq .enabled true }}
+                - -tls
+                {{- if eq .clientAuth true }}
+                - -tls-client-cert={{.clientCertificate }}
+                - -tls-client-key={{.clientKey }}
+                {{- end }}
+                {{- if eq .verify true }}
+                - -tls-ca-cert={{ .ca }}
+                - -tls-server-name=waas-rate-limiter.{{ $.Release.Namespace }}.svc
+                {{- else }}
+                - -tls-no-verify
+                {{- end }}
+              {{- else }}
+                - -tls=false
+              {{- end }}
+            {{- end }}
+          ports:
+            - name: rl-stats
+              containerPort: 8080
+          resources:
+            {{- toYaml .Values.containers.rater.resources  | nindent 12 }}
+          {{- with .Values.containers.rater.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+    {{- /* rate limiter server TLS volumes */}}
+    {{- with .Values.tls.server }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* rate limiter client TLS volumes */}}
+    {{- with .Values.tls.clients.rateLimiter }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* redis client TLS volumes */}}
+    {{- with .Values.tls.clients.redis }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+{{- end }}

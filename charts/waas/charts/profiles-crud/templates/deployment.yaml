@@ -1,0 +1,196 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-profiles-crud-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      configid: waas-profiles-crud-container
+  template:
+    metadata:
+      labels:
+        configid: waas-profiles-crud-container
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: profiles
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.profiles.registry }}/waas-profiles-crud{{ include "waas.image.version" . | coalesce .Values.containers.profiles.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          env:
+            - name: API_WORK_DIR
+              value: {{ .Values.apiWorkDirName | default "/data" | quote }}
+            - name: LOG_LEVEL
+              value: error
+            - name: PORT
+              value: {{ .Values.global.profilesCrud.serviceTargetPort | default "8080" | quote }}
+            - name: SVC_HOSTNAME
+              value: waas-profiles-crud.{{ .Release.Namespace }}.svc
+            {{- if ne .Values.limitToSingleNamespace "" }}
+            - name: WAAS_LIMIT_NAMESPACE
+              value: {{ .Values.limitToSingleNamespace | quote }}
+            {{- end}}
+            {{- if .Values.global.ipv6Support }}
+            - name: KUBERNETES_SERVICE_HOST
+              value: kubernetes.default.svc
+            {{- end }}
+          {{- /* TLS settings for profiles-crud service */}}
+        {{- with .Values.tls.server }}
+            - name: SERVER_TLS_ENABLED
+              value: {{ .enabled | quote }}
+            - name: SERVER_TLS_CLIENT_AUTH
+              value: {{ .clientAuth | quote }}
+            - name: SERVER_TLS_VERIFY
+              value: {{ .verify | quote }}
+          {{- if eq .enabled true }}
+            - name: SERVER_TLS_CERT_FILE
+              value: {{ .certificate | quote }}
+            - name: SERVER_TLS_KEY_FILE
+              value: {{ .key | quote }}
+            {{- if eq .verify true }}
+            - name: SERVER_TLS_CA_FILE
+              value: {{ .ca | quote }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* TLS settings for profiles-crud client probes */}}
+        {{- with .Values.tls.clients.profiles }}
+            - name: HC_CLIENT_TLS_ENABLED
+              value: {{ .enabled | quote }}
+            - name: HC_CLIENT_TLS_CLIENT_AUTH
+              value: {{ .clientAuth | quote }}
+            - name: HC_CLIENT_TLS_VERIFY
+              value: {{ .verify | quote }}
+          {{- if eq .enabled true }}
+            {{- if eq .clientAuth true }}
+            - name: HC_CLIENT_TLS_CERT_FILE
+              value: {{ .clientCertificate | quote }}
+            - name: HC_CLIENT_TLS_KEY_FILE
+              value: {{ .clientKey | quote }}
+            {{- end }}
+            {{- if eq .verify true }}
+            - name: HC_CLIENT_TLS_CA_FILE
+              value: {{ .ca | quote }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+          resources:
+            {{- toYaml .Values.containers.profiles.resources | nindent 14 }}
+          {{- with .Values.containers.profiles.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 14 }}
+          {{- end }}
+          volumeMounts:
+            - name: profile-crud-api-work-volume
+              mountPath: {{ .Values.apiWorkDirName | default "/data" | quote }}
+            - name: enrich-volume
+              mountPath: /enrich
+        {{- /* profiles-crud server TLS mounts */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* profiles-crud client TLS mounts */}}
+        {{- with .Values.tls.clients.profiles }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+          readinessProbe:
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - node main/health_check.js > /dev/null 2>&1
+          livenessProbe:
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - node main/health_check.js > /dev/null 2>&1
+      initContainers:
+        - name: init-enrich
+          image: {{ include "waas.signatures-image.registry" . | coalesce .Values.containers.enrich.registry }}/waas-enrich{{ include "waas.signatures-image.version" . | coalesce .Values.containers.enrich.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          args:
+            - kopy
+            - /src/profiles-crud
+            - /enrich
+          resources:
+            {{- toYaml .Values.containers.enrich.resources | nindent 14 }}
+          {{- with .Values.containers.enrich.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /enrich
+              name: enrich-volume
+      {{- if or .Values.global.image.imagePullSecret .Values.global.signaturesImage.imagePullSecret }}
+      imagePullSecrets:
+        {{- if .Values.global.image.imagePullSecret }}
+      - name: {{ .Values.global.image.imagePullSecret }}
+        {{- end }}
+        {{- if .Values.global.signaturesImage.imagePullSecret }}
+      - name: {{ .Values.global.signaturesImage.imagePullSecret }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.serviceAccountName | default "waas-profiles-crud-service-account" }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: profile-crud-api-work-volume
+          emptyDir:
+            {{- toYaml .Values.volumeTmp | nindent 12 }}
+        - name: enrich-volume
+          emptyDir:
+            {{- toYaml .Values.volumeTmp | nindent 12 }}
+    {{- /* profiles-crud server TLS volumes */}}
+    {{- with .Values.tls.server }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* profiles-crud client TLS volumes */}}
+    {{- with .Values.tls.clients.profiles }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}

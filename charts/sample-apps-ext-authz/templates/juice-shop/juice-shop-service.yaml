@@ -1,0 +1,17 @@
+{{- if .Values.juiceShop }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-juice-shop-service
+  labels:
+    waas.radware.com/sample: juice-shop
+spec:
+  selector:
+    app: sample-juice-shop-container
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      name: http
+      protocol: TCP
+{{- end }}

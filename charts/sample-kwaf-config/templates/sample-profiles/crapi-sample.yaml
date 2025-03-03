@@ -1,0 +1,76 @@
+{{- if and .Values.crapi (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  crapi-web-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: crapi-web-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: crapi-web
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: crapi-web
+      hostname: '*'
+      id: crapi-web-sample
+      path:
+        operand: Prefix
+        value: /
+---
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  crapi-mail-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: crapi-mail-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: crapi-mail
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: crapi-mail
+      hostname: '*'
+      id: crapi-mail-sample
+      path:
+        operand: Prefix
+        value: /
+---
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  crapi-identity-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: crapi-identity-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: crapi-identity
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: crapi-identity
+      hostname: '*'
+      id: crapi-identity-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}

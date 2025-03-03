@@ -1,0 +1,43 @@
+{{- if not (eq .Values.global.systemMode "inline") }}
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-enforcer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    waas-prometheus-service: monitor
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-enforcer-container
+  {{- include "waas.serviceTypeExposed" . }}
+  ports:
+      {{- if eq .Values.global.systemMode "ext-authz" }}
+      - port: {{ .Values.global.enforcer.ports.enforcerHttp.port | default 80 }}
+        targetPort: {{ .Values.global.enforcer.ports.enforcerHttp.targetPort | default 9000 }}
+        name: {{ .Values.global.enforcer.ports.enforcerHttp.appProtocol | default "http" }}-enforcer
+        protocol: TCP
+        {{ include "waas.nodeport" . }}
+      - port: {{ .Values.global.enforcer.ports.enforcerHttpRL.port | default 9929 }}
+        targetPort: {{ .Values.global.enforcer.ports.enforcerHttpRL.targetPort | default 9929 }}
+        name: {{ .Values.global.enforcer.ports.enforcerHttpRL.appProtocol | default "http" }}-enforcer-rl
+        protocol: TCP
+        {{ include "waas.nodeport" (dict "Values" .Values "Extra" "3") }}
+      {{- end }}
+      - port: {{ .Values.global.enforcer.ports.stats.port | default 8080 }}
+        targetPort: {{ .Values.global.enforcer.ports.stats.targetPort | default 19010 }}
+        protocol: TCP
+        name: {{ .Values.global.enforcer.ports.stats.appProtocol | default "http" }}-stats
+        {{ include "waas.nodeport" (dict "Values" .Values "Extra" "1") }}
+        # exposed at /stats/prometheus
+      - port: {{ .Values.global.fluentbit.httpPort | default 2025 }}
+        targetPort: {{ .Values.global.fluentbit.httpPort | default 2025 }}
+        protocol: TCP
+        name: {{ .Values.global.fluentbit.appProtocol | default "http" }}-fb-stats
+        {{ include "waas.nodeport" (dict "Values" .Values "Extra" "2") }}
+        # exposed at /metrics
+{{- end }}
+{{- end }}

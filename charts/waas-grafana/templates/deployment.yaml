@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-grafana-deployment
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      configid: waas-grafana-container
+  template:
+    metadata:
+      labels:
+        configid: waas-grafana-container
+        {{- include "waas.labels" . | indent 8}}
+    spec:
+      containers:
+        - name: grafana
+          image: {{ .Values.containers.grafana.imagePath }}
+          imagePullPolicy: {{ .Values.containers.grafana.pullPolicy }}
+          env:
+          - name: GF_SECURITY_ADMIN_USER
+            valueFrom:
+              secretKeyRef:
+                key: admin-user
+                name: waas-grafana-user-secret
+          - name: GF_SECURITY_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: admin-password
+                name: waas-grafana-user-secret
+          volumeMounts:
+            - name: datasources-config-volume
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboards-config-volume
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: custom-dashboards-config-volume
+              mountPath: /predefined_dashboards
+            # - name: ini-config-volume
+            #   mountPath: /etc/grafana/grafana.ini
+            #   subPath: grafana.ini
+      volumes:
+        - name: datasources-config-volume
+          configMap:
+            name: waas-grafana-datasources-config
+        - name: dashboards-config-volume
+          configMap:
+            name: waas-grafana-dashboards-config
+        - name: custom-dashboards-config-volume
+          configMap:
+            name: waas-grafana-custom-dashboards-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

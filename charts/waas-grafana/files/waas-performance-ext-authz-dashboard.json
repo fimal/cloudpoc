@@ -1,0 +1,2513 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 2,
+  "id": 9,
+  "iteration": 1655037089635,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 31,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 0,
+            "y": 1
+          },
+          "id": 37,
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "8.3.4",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "histogram_quantile(0.1, sum(rate(istio_request_duration_milliseconds_bucket{response_code=\"406\",destination_service=\"perf-nginx-service.test.svc.cluster.local\",job=\"$job\"}[1m])) by (le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "10%",
+              "refId": "D"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "histogram_quantile(0.5, sum(rate(istio_request_duration_milliseconds_bucket{response_code=\"406\",destination_service=\"perf-nginx-service.test.svc.cluster.local\",job=\"$job\"}[1m])) by (le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "50%",
+              "refId": "E"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "histogram_quantile(0.90, sum(rate(istio_request_duration_milliseconds_bucket{response_code=\"406\",destination_service=\"perf-nginx-service.test.svc.cluster.local\",job=\"$job\"}[1m])) by (le))",
+              "interval": "",
+              "legendFormat": "90%",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{response_code=\"406\",destination_service=\"perf-nginx-service.test.svc.cluster.local\",job=\"$job\"}[1m])) by (le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "95%",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{response_code=\"406\",destination_service=\"perf-nginx-service.test.svc.cluster.local\",job=\"$job\"}[1m])) by (le))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "99%",
+              "refId": "C"
+            }
+          ],
+          "title": "ISTIO - Latency  for response code  406",
+          "type": "bargauge"
+        },
+        {
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 6,
+            "y": 1
+          },
+          "id": 35,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "8.3.4",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "rate(istio_requests_total{response_code=\"403\",destination_service=\"perf-nginx-service.test.svc.cluster.local\"}[1m])",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{response_code}}",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "rate(istio_requests_total{response_code=\"406\",destination_service=\"perf-nginx-service.test.svc.cluster.local\"}[1m])",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{response_code}}",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "rate(istio_requests_total{response_code=\"200\",destination_service=\"perf-nginx-service.test.svc.cluster.local\"}[1m])",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{response_code}}",
+              "refId": "C"
+            }
+          ],
+          "title": "ISTIO - Counter per Response Code",
+          "type": "stat"
+        },
+        {
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 1
+          },
+          "id": 33,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "single"
+            }
+          },
+          "pluginVersion": "8.3.4",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "envoy_listener_downstream_cx_active{envoy_listener_address=\"0.0.0.0_9000\", job=\"$job\"}",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "enforcer cx active",
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+              },
+              "exemplar": true,
+              "expr": "envoy_listener_downstream_cx_active{listener_address=\"0.0.0.0_8080\",job=\"$job\"}",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "istio cx active",
+              "refId": "D"
+            }
+          ],
+          "title": "Request CX Active",
+          "type": "timeseries"
+        }
+      ],
+      "title": "ISTIO vs ENFORCER",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 29,
+      "panels": [],
+      "title": "KWAF",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "Latency  Istio total",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 2
+      },
+      "hiddenSeries": false,
+      "id": 4,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true,
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.05, sum(irate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "5%",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.10, sum(irate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "10%",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50, sum(irate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "50%",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "90%",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum(irate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "95%",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99, sum(irate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "99%",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99, sum(irate(istio_request_duration_milliseconds_bucket{response_code=\"406\",destination_service=\"$app_svc\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "406",
+          "refId": "G"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Latency  Istio total",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1148",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1149",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 8,
+        "y": 2
+      },
+      "id": 5,
+      "interval": "",
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.05, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "5%",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.10, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "10%",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "50%",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.70, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "70%",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.80, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "80%",
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "90%",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "95%",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "99%",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{response_code=\"406\",destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le))",
+          "hide": true,
+          "interval": "",
+          "legendFormat": "406",
+          "refId": "I"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(+Inf, sum(rate(istio_request_duration_milliseconds_bucket{destination_service=\"$app_svc\",job=\"$job\"}[1m])) by (le)) ",
+          "hide": true,
+          "interval": "",
+          "legendFormat": "100%",
+          "refId": "J"
+        }
+      ],
+      "title": "Latency Istio bars",
+      "type": "bargauge"
+    },
+    {
+      "description": "Istio req rate over 1minute",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 3000
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 13,
+        "y": 2
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "rate(istio_requests_total{destination_service=\"$app_svc\",job=\"$job\",response_code=\"200\"}[1m])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "RQ rate",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "envoy_listener_downstream_cx_active{listener_address=\"0.0.0.0_8080\",job=\"$job\"}",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "CX active",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "rate(envoy_listener_downstream_cx_total{listener_address=\"0.0.0.0_8080\",job=\"$job\"}[1m])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "CX rate",
+          "refId": "C"
+        }
+      ],
+      "title": "Istio RQ and CX",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 2
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true,
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(irate(istio_requests_total{destination_service=\"$app_svc\",job=\"$job\"}[1m]))by (response_code)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{response_code}}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Rate over 1minute - Istio",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:473",
+          "format": "short",
+          "logBase": 10,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:474",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 7
+      },
+      "hiddenSeries": false,
+      "id": 11,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true,
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.05, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "5%",
+          "refId": "D"
+        },
+        {
+          "expr": "histogram_quantile(0.10, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "10%",
+          "refId": "C"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "50%",
+          "refId": "F"
+        },
+        {
+          "expr": "histogram_quantile(0.90, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "90%",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "95%",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "99%",
+          "refId": "E"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Latency Istio  - Enforcer ",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1148",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1149",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 8,
+        "y": 7
+      },
+      "id": 20,
+      "interval": "",
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.05, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "5%",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "histogram_quantile(0.10, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "10%",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "histogram_quantile(0.5, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "50%",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "histogram_quantile(0.70, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "70%",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "histogram_quantile(0.80, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "80%",
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "histogram_quantile(0.90, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "90%",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "histogram_quantile(0.95, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "95%",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "histogram_quantile(0.99, sum(irate(envoy_cluster_local_upstream_rq_time_bucket{cluster_name=\"outbound|9000||enforcer\",job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "99%",
+          "refId": "E"
+        }
+      ],
+      "title": "Latency Istio-Enforcer  bars",
+      "type": "bargauge"
+    },
+    {
+      "description": "Enforcer RQ and CX",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 3000
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 13,
+        "y": 7
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(irate(envoy_http_downstream_rq_total {envoy_http_conn_manager_prefix=\"$pf\",job=\"$job\"}[1m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "RQ rate",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "envoy_http_downstream_cx_active{envoy_http_conn_manager_prefix=\"$pf\",job=\"$job\"}",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "CX  active ",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(irate(envoy_http_downstream_cx_total {envoy_http_conn_manager_prefix=\"$pf\",job=\"$job\"}[1m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "CX rate",
+          "refId": "C"
+        }
+      ],
+      "title": "Enforcer RQ and CX",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 7
+      },
+      "hiddenSeries": false,
+      "id": 12,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true,
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(irate(envoy_http_downstream_rq_total {envoy_http_conn_manager_prefix=\"$pf\",job=\"$job\"}[1m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "rps",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Rate over 1minute - Enforcer",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:473",
+          "format": "short",
+          "logBase": 10,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:474",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "description": "Latency  Enforcer",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 12
+      },
+      "id": 8,
+      "interval": "",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.05,sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\", job=\"$job\"}[1m])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "5%",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.10,sum (rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "10%",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50,sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "50%",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90,sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "90%",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95,sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "95%",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99,sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"lst-kwaf/waas-api-profile\", job=\"$job\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "99%",
+          "refId": "E"
+        }
+      ],
+      "title": "Latency  Enforcer",
+      "type": "timeseries"
+    },
+    {
+      "description": "Latency Enforcer bars",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 8,
+        "y": 12
+      },
+      "id": 9,
+      "interval": "",
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.05, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "format": "time_series",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "5%",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.10, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "10%",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "50%",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.70, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "70%",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.80, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "80%",
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "90%",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "95%",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "histogram_quantile(0.99, sum(rate(envoy_http_downstream_rq_time_bucket{envoy_http_conn_manager_prefix=\"$pf\"}[1m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "99%",
+          "refId": "E"
+        }
+      ],
+      "title": "Latency Enforcer bars",
+      "type": "bargauge"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 64.9999
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 3,
+        "x": 13,
+        "y": 12
+      },
+      "id": 25,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^.*$\"}[1m])) / sum (machine_cpu_cores{kubernetes_io_hostname=~\"^.*$\"}) * 100",
+          "hide": false,
+          "interval": "10s",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A",
+          "step": 10
+        }
+      ],
+      "title": "Cluster CPU usage (1m avg)",
+      "type": "gauge"
+    },
+    {
+      "description": "Aggregated  PODs CPU over 1 minute",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 12
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "(sum(rate(container_cpu_usage_seconds_total{namespace=\"$ns\",pod=~\"istio-ingressgateway-.*\",container=~\"\"}[1m])))*1000",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Aggregated  PODs CPU over 1 minute",
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 120
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 12
+      },
+      "id": 14,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "expr": "SUM(envoy_server_memory_allocated{instance=~\".*.15090\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Allocated memory",
+          "refId": "A"
+        },
+        {
+          "expr": "SUM(envoy_server_memory_heap_size{instance=~\".*.15090\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Heap Size",
+          "refId": "B"
+        }
+      ],
+      "title": "Total Istio's Memory",
+      "type": "stat"
+    },
+    {
+      "description": "Enforcer CPU",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 16,
+        "y": 16
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "(sum(rate(container_cpu_usage_seconds_total{container=\"enforcer\" ,pod=~\"istio-ingressgateway-.*\",namespace=\"$ns\"}[1m])))*1000",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "counter",
+          "refId": "A"
+        }
+      ],
+      "title": "Enforcer CPU",
+      "type": "stat"
+    },
+    {
+      "description": "Istio CPU",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 500
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 18,
+        "y": 16
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": " (sum(rate(container_cpu_usage_seconds_total{namespace=\"$ns\",container=\"istio-proxy\",pod=~\"istio-ingressgateway-.*\"}[1m])))*1000",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "counter",
+          "refId": "A"
+        }
+      ],
+      "title": "Istio CPU",
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 120
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 16
+      },
+      "id": 21,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "expr": "SUM(envoy_server_memory_allocated{instance=~\".*.19010\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Allocated memory",
+          "refId": "A"
+        },
+        {
+          "expr": "SUM(envoy_server_memory_heap_size{instance=~\".*.19010\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Heap Size",
+          "refId": "B"
+        }
+      ],
+      "title": "Total Enforcers Memory",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 5,
+      "dashes": false,
+      "description": "Number of Enforcers",
+      "fieldConfig": {
+        "defaults": {
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 3,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 17
+      },
+      "hiddenSeries": false,
+      "id": 22,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 3,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true,
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pluginVersion": "8.3.4",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": true,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(envoy_server_live{instance=~\".*.15090\",job=\"$job\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeRegions": [],
+      "title": "Number of Enforcers",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:53",
+          "format": "short",
+          "label": "",
+          "logBase": 1,
+          "max": "5",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:54",
+          "format": "short",
+          "logBase": 1,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false
+      }
+    },
+    {
+      "aliasColors": {},
+      "breakPoint": "50%",
+      "combine": {
+        "label": "Others",
+        "threshold": 0
+      },
+      "description": "Enforcer Status Code Classes",
+      "fontSize": "80%",
+      "format": "short",
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 8,
+        "y": 17
+      },
+      "id": 23,
+      "legend": {
+        "percentage": true,
+        "show": true,
+        "values": true
+      },
+      "legendType": "Right side",
+      "links": [],
+      "nullPointMode": "connected",
+      "pieType": "donut",
+      "pluginVersion": "7.0.5",
+      "strokeWidth": "2",
+      "targets": [
+        {
+          "expr": "sum(rate(envoy_http_downstream_rq_xx{envoy_http_conn_manager_prefix=\"$pf\"}[5m])) by (envoy_response_code_class)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{envoy_response_code_class}}xx",
+          "refId": "A"
+        }
+      ],
+      "title": "Enforcer Status Code Classes",
+      "type": "grafana-piechart-panel",
+      "valueName": "current"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 3,
+        "x": 13,
+        "y": 17
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum (machine_cpu_cores{instance=~\"^$node$\"})",
+          "interval": "",
+          "legendFormat": "Total  Cores",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum (rate (container_cpu_usage_seconds_total{cpu=\"total\",id=\"/\",instance=~\"^$node$\"}[1m]))",
+          "interval": "",
+          "legendFormat": "Used Cores",
+          "refId": "B"
+        }
+      ],
+      "title": "CPU",
+      "type": "stat"
+    },
+    {
+      "description": "Number of Enforcers",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 16,
+        "y": 20
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "expr": "sum(envoy_server_live{instance=~\".*.15090\",job=\"$job\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        },
+        {
+          "expr": "",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "expr": "",
+          "hide": true,
+          "interval": "",
+          "legendFormat": "{{destination_app}}",
+          "refId": "C"
+        }
+      ],
+      "title": "Number of Enforcers",
+      "type": "stat"
+    },
+    {
+      "description": "Ext authz timeout rate over 1 minute",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 19,
+        "y": 20
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(rate(envoy_cluster_ext_authz_ok{cluster_name=\"outbound|80||perf-nginx-service.test.svc.cluster.local\", job=\"$job\"}[1m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "OK",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(rate(envoy_cluster_ext_authz_denied{cluster_name=\"outbound|80||perf-nginx-service.test.svc.cluster.local\", job=\"$job\"}[1m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Denied",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "sum(rate(envoy_cluster_ext_authz_error{cluster_name=\"outbound|80||perf-nginx-service.test.svc.cluster.local\", job=\"$job\"}[1m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Error",
+          "refId": "C"
+        }
+      ],
+      "title": "Ext AUTHZ rate over 1 minute",
+      "type": "stat"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 34,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "waas-istio-ingressgateway"
+          ],
+          "value": [
+            "waas-istio-ingressgateway"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(istio_requests_total,job)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "job",
+        "options": [],
+        "query": {
+          "query": "label_values(istio_requests_total,job)",
+          "refId": "Prometheus-job-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "istio-system"
+          ],
+          "value": [
+            "istio-system"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "namespace",
+        "multi": true,
+        "name": "ns",
+        "options": [],
+        "query": {
+          "query": "label_values(namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "perf-nginx-service.test.svc.cluster.local",
+          "value": "perf-nginx-service.test.svc.cluster.local"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(istio_requests_total,destination_service)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "app service",
+        "multi": false,
+        "name": "app_svc",
+        "options": [],
+        "query": {
+          "query": "label_values(istio_requests_total,destination_service)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "lst-kwaf/waas-api-profile"
+          ],
+          "value": [
+            "lst-kwaf/waas-api-profile"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(envoy_http_downstream_cx_active{envoy_http_conn_manager_prefix!~\"ads_cluster|waas_metrics|admin\"},envoy_http_conn_manager_prefix)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "profile",
+        "multi": true,
+        "name": "pf",
+        "options": [],
+        "query": {
+          "query": "label_values(envoy_http_downstream_cx_active{envoy_http_conn_manager_prefix!~\"ads_cluster|waas_metrics|admin\"},envoy_http_conn_manager_prefix)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(container_cpu_usage_seconds_total,instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "node",
+        "multi": false,
+        "name": "node",
+        "options": [],
+        "query": {
+          "query": "label_values(container_cpu_usage_seconds_total,instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "WAAS EXT-AUTHZ Dashboard",
+  "uid": "dflkjlkj499",
+  "version": 2,
+  "weekStart": ""
+}

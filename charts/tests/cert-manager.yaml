@@ -1,0 +1,4 @@
+global:
+  certManager:
+    enabled: true
+    issuer: kwaf-cluster-issuer

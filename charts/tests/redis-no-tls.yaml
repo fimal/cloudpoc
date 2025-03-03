@@ -1,0 +1,19 @@
+waas-redis:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      redis:
+        enabled: false
+        mounts:
+        volumes:
+
+waas-rate-limiter:
+  tls:
+    clients:
+      redis:
+        enabled: false
+        mounts:
+        volumes:

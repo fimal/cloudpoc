@@ -1,0 +1,11 @@
+containers:
+  kibana:
+    imagePath: altartifactory:8081/waas-snapshot-local-alt/waas-kibana/dev:latest
+    pullPolicy: Always
+  dashboards:
+    imagePath: altartifactory:8081/waas-snapshot-local-alt/waas-kubectl/dev:latest
+    pullPolicy: Always
+# Service types are:  LoadBalancer | NodePort | ClusterIP
+serviceType: NodePort
+# if NodePort is used, please define nodePort number
+nodePort: 31013

@@ -1,0 +1,26 @@
+{{- if and .Values.grpcx (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  grpcx-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: grpcx-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: grpcx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: grpcx
+      hostname: '*'
+      id: grpcx-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}

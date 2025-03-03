@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Chart.Name }}-container-test"
+  labels:
+    release: {{ .Release.Name }}
+    target: helm-{{ .Chart.Name }}-test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: helm-{{ .Chart.Name }}-test
+          image: {{ .Values.containers.tester.imagePath }}
+          imagePullPolicy: {{ .Values.containers.tester.pullPolicy }}
+          env:
+            - name: PROMETHEUS_SERVICE
+              value: waas-prometheus-service
+            - name: GRAFANA_SERVICE
+              value: waas-grafana-service
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  key: admin-user
+                  name: waas-grafana-user-secret
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: admin-password
+                  name: waas-grafana-user-secret
+          command: ["/bin/bash", "-c"]
+          args:
+            - |-
+{{ .Files.Get "files/test_dashboards_loaded.sh" | indent 14 }}
+

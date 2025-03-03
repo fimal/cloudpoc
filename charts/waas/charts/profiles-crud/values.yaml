@@ -1,0 +1,133 @@
+# directory name and volume size limit where temporary api shema files will be stored.
+# the default apiWorkDirName is /data
+apiWorkDirName:
+volumeTmp: {}
+# volume size limit for enrich volume
+volumeEnrich: {}
+
+image:
+  registry:
+  version:
+enabled: true
+# specify a namespace to limit the CRUD to a single namespace
+limitToSingleNamespace: ""
+nodePort: 6
+replicaCount: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+## settings for specific containers
+containers:
+  profiles:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  enrich:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+
+tls:
+  server:
+    # servers will accept HTTPS or HTTP connections
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # client authentication using client certificate may be required
+    # allowed values: true, false
+    # default value: do not require client authentication
+    clientAuth: true
+    # certificate file location, required
+    certificate: /etc/profiles-crud/server/tls.crt
+    # key file location, required
+    key: /etc/profiles-crud/server/tls.key
+    # ca certificate file location, not required if clientAuth=false
+    ca: /etc/profiles-crud/ca/ca.crt
+    # verify server upon connection
+    # allowed values: true, false
+    # default value: verify server identity
+    verify: true
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: profiles-crud-server-volume
+        mountPath: /etc/profiles-crud/server
+      - name: ca-volume
+        mountPath: /etc/profiles-crud/ca
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: profiles-crud-server-volume
+        secret:
+          secretName: waas-profiles-crud-server-secret
+      - name: ca-volume
+        configMap:
+          name: waas-ca-config
+  clients:
+    profiles:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/profiles-crud/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/profiles-crud/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/profiles-crud/client/ca/ca.crt
+      # verify server upon connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name: 
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: profiles-crud-client-volume
+          mountPath: /etc/profiles-crud/client
+        - name: profiles-crud-ca-volume
+          mountPath: /etc/profiles-crud/client/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: profiles-crud-client-volume
+          secret:
+            secretName: waas-profiles-crud-client-secret
+        - name: profiles-crud-ca-volume
+          configMap:
+            name: waas-ca-config
+
+# uncomment to add extra labels to profile-crud
+# labels:
+
+# uncomment to add extra annotations to profile-crud
+# extraAnnotations:
+
+# profiles-crud service port name prefix to use for istio, defaults to https
+# global:
+#   profilesCrud:
+#     serviceAppProtocol: https

@@ -1,0 +1,270 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: waas-elasticsearch-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  serviceName: waas-elasticsearch-discovery
+  replicas: {{ .Values.replicaCount }}
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      configid: waas-elasticsearch-container
+  template:
+    metadata:
+      labels:
+        configid: waas-elasticsearch-container
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: elasticsearch
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.elasticsearch.registry }}/waas-elasticsearch{{ include "waas.image.version" . | coalesce .Values.containers.elasticsearch.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command: ["/bin/bash"]
+          args: ["-c", "/usr/local/bin/docker-entrypoint.sh"]
+          {{- with .Values.containers.elasticsearch.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: node.name
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: processors
+              value: {{ .Values.processors | quote }}
+            {{- include "waas.elasticStorageManagement.elastic" . }}
+            - name: thread_pool.write.queue_size
+              value: {{ .Values.thread_pool_write_queue_size | quote }}
+            - name: thread_pool.write.size
+              value: {{ .Values.thread_pool_write_size | quote }}
+            - name: indices.memory.index_buffer_size
+              value: {{ .Values.indices_memory_index_buffer_size | quote }}
+            {{- if eq (.Values.replicaCount | toString) "1" }}
+            - name: discovery.type
+              value: "single-node"
+            {{- else }}  
+            - name: cluster.initial_master_nodes
+              value: "{{- include "waas.elasticsearch.masters" . }}"
+            - name: discovery.seed_hosts
+              value: "waas-elasticsearch-discovery"
+            {{- end }}
+            - name: http.port
+              value: "{{ .Values.global.elasticsearch.serviceExposed.serviceTargetPort | default 9200 }}"
+            - name: transport.port
+              value: "{{ .Values.global.elasticsearch.serviceDiscovery.serviceTargetPort | default 9300 }}"
+            - name: cluster.name
+              value: "elasticsearch"
+            - name: network.host
+            {{- if .Values.global.ipv6Support }}
+              value: "_global:ipv6_"
+            {{- else }}
+              value: "0.0.0.0"
+            {{- end }}
+            # apparently, no need to lock memory on swapless host
+            - name: bootstrap.memory_lock
+              value: "false"
+            - name: node.store.allow_mmap
+              value: {{ .Values.ConfigureMmap | default false | quote }}
+            - name: ingest.geoip.downloader.enabled
+              value: "false"
+            - name: xpack.security.enabled
+              value: "true"
+            - name: xpack.security.transport.ssl.enabled
+              value: "true"
+            - name: xpack.security.transport.ssl.verification_mode
+              value: "certificate"
+          {{- with .Values.tls.server.transport }}
+            - name: xpack.security.transport.ssl.key
+              value: {{ tpl .key $ | quote }}
+            - name: xpack.security.transport.ssl.certificate
+              value: {{ tpl .certificate $ | quote }}
+            - name: xpack.security.transport.ssl.certificate_authorities
+              value: {{ tpl .ca $ | quote }}
+          {{- end }}
+            - name: xpack.security.http.ssl.enabled
+              value: "true"
+          {{- with .Values.tls.server.http }}
+            - name: xpack.security.http.ssl.key
+              value: {{ tpl .key $ | quote }}
+            - name: xpack.security.http.ssl.certificate
+              value: {{ tpl .certificate $ | quote }}
+            - name: xpack.security.http.ssl.certificate_authorities
+              value: {{ tpl .ca $ | quote }}
+          {{- end }}
+            - name: 'ES_PORT'
+              value: "{{ .Values.global.elasticsearch.serviceExposed.serviceTargetPort | default 9200 }}"
+            - name: 'ELASTIC_USER'
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: user
+            - name: 'ELASTIC_PASSWORD'
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: password
+          {{- if .Values.global.kibanaCredEnabled }}
+            - name: 'KIBANA_SYSTEM_USER'
+              valueFrom:
+                secretKeyRef:
+                  name: waas-ksauth-secret
+                  key: user
+            - name: 'KIBANA_SYSTEM_PASSWORD'
+              valueFrom:
+                secretKeyRef:
+                  name: waas-ksauth-secret
+                  key: password
+          {{- end }}
+            - name: "ELASTIC_HEALTH_CHECK_PARAMS"
+              {{- if gt .Values.replicaCount 2.0 }}
+              value: "wait_for_status=green&timeout=1s"
+              {{- else }}
+              value: "wait_for_status=yellow&timeout=1s"
+              {{- end }}
+            - name: ES_PATH_CONF
+              value: "{{ .Values.ES_PATH_CONF }}"
+            - name: ES_JAVA_OPTS              
+              value: "{{ .Values.containers.elasticsearch.es_java_opts }}"
+            {{- /* extra env vars */}}
+            {{- if .Values.elasticsearchExtraEnv }}
+              {{- toYaml .Values.elasticsearchExtraEnv | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+            periodSeconds: 10
+            exec:
+              command:
+                - /probes/startup/startup.sh
+          readinessProbe:
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 3
+            exec:
+              command:
+                - /probes/periodic/probe.sh
+          livenessProbe:
+            timeoutSeconds: 6
+            failureThreshold: 10
+            successThreshold: 1
+            initialDelaySeconds: 30
+            exec:
+              command:
+                - /probes/periodic/probe.sh
+          resources:
+            {{- toYaml .Values.containers.elasticsearch.resources  | nindent 12 }}
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /usr/share/elasticsearch/logs
+            - name: data-volume
+              mountPath: /usr/share/elasticsearch/data
+            - name: config-volume
+              mountPath: {{ .Values.ES_PATH_CONF }}
+            - name: elasticsearch-jvm-options-volume
+              mountPath: {{ .Values.ES_PATH_CONF }}/jvm.options.d
+            - name: elasticsearch-ilm-options-volume
+              mountPath: {{ .Values.ES_PATH_CONF }}/ilm
+            - name: elasticsearch-templates-volume
+              mountPath: {{ .Values.ES_PATH_CONF }}/templates
+            {{- if .Values.global.elasticsearch.setElasticTimestamp }}
+            - name: final-pipeline-volume
+              mountPath: {{ .Values.ES_PATH_CONF }}/pipelines
+            {{- end }}
+          {{- /* elasticsearch server TLS mounts */}}
+          {{- with .Values.tls.server }}
+            {{ tpl .mounts $ | nindent 12}}
+          {{- end }}
+        {{- if .Values.extraContainers }}
+          {{- toYaml .Values.extraContainers | nindent 8 }}
+        {{- end }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      initContainers:
+      {{- if .Values.configureMmap }}
+        - name: init-sysctl1
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.initSysctl1.registry }}/waas-kubectl{{ include "waas.image.version" . | coalesce .Values.containers.initSysctl1.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command:
+            - sysctl
+            - -w
+            - vm.max_map_count=262144
+          resources:
+            {{- toYaml .Values.containers.initSysctl1.resources | nindent 12 }}
+          {{- with .Values.containers.initSysctl1.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      {{- if .Values.extraInitContainers }}
+          {{- toYaml .Values.extraInitContainers | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.serviceAccountName | default "waas-elasticsearch-service-account" }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: elasticsearch-jvm-options-volume
+          configMap:
+            name: waas-elasticsearch-jvm-options-config
+        - name: elasticsearch-templates-volume
+          configMap:
+            name: waas-elasticsearch-templates-config
+        - name: elasticsearch-ilm-options-volume
+          configMap:
+            name: waas-elasticsearch-ilm-options-config
+            items:
+            - key: ilm.options
+              path: ilm.options
+        {{- if .Values.global.elasticsearch.setElasticTimestamp }}
+        - name: final-pipeline-volume
+          configMap:
+            name: waas-elasticsearch-pipelines
+        {{- end }}
+        - name: config-volume
+          emptyDir:
+            {{- toYaml .Values.volumeCfg | nindent 12 }}
+        - name: tmp-volume
+          emptyDir:
+            {{- toYaml .Values.volumeTmp | nindent 12 }}
+        - name: logs-volume
+          emptyDir:
+            {{- toYaml .Values.volumeLogs | nindent 12 }}
+      {{- /* elasticsearch server TLS volumes */}}
+      {{- with .Values.tls.server }}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- /* extraVolumes */}}
+      {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
+      {{- end }}
+{{- include "waas.elasticsearch.volumes" . }}
+  {{- end }}

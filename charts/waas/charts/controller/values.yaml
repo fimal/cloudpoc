@@ -1,0 +1,100 @@
+image:
+  registry:
+  version:
+enabled: true
+nodePort: 11
+replicaCount: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+# if left empty default serviceAccount will be used
+serviceAccountName: ""
+
+## add debug headers
+addDebugHeaders: false
+
+
+## get user real ip address from this header (uncomment the below line and replace 'real-ip-header' with a comma delimited header list)
+#userIpHeaders: real-ip-header
+
+#enable/disable enforcer access log, default true
+#enforcerAccessLog: true
+
+## additional headers added to enforcer's access log (uncomment below and replace 'custom' with comma delimited header list)
+#accessLogHeadersToAdd: custom
+
+## additional headers added to enforcer's security log (uncomment below and replace 'custom' with comma delimited header list)
+#securityLogHeadersToAdd: custom
+
+## settings for specific containers
+containers:
+  controller:
+    # use to set GOMEMLIMIT for the container
+    # value in bytes. 
+    # note that thes value set here has to be lower than the containers resources.limits.memory value
+    # as this is a soft limit that may be breached.
+    # example:
+    # goMemoryLimit: 1024000000
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+
+tls:
+  server:
+    # servers will accept HTTPS or HTTP connections
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # client authentication using client certificate may be required
+    # allowed values: true, false
+    # default value: do not require client authentication
+    clientAuth: true
+    # certificate file location, required
+    certificate: /etc/controller/server/tls.crt
+    # key file location, required
+    key: /etc/controller/server/tls.key
+    # ca certificate file location, not required if clientAuth=false
+    ca: /etc/controller/ca/ca.crt
+    # verify server upon connection
+    # allowed values: true, false
+    # default value: verify server identity
+    verify: true
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: controller-server-volume
+        mountPath: /etc/controller/server
+      - name: ca-volume
+        mountPath: /etc/controller/ca
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: controller-server-volume
+        secret:
+          secretName: waas-controller-server-secret
+      - name: ca-volume
+        configMap:
+          name: waas-ca-config
+
+# uncomment to add labels to controller
+#labels:
+
+# uncomment to add annotations to controller
+#extraAnnotations:
+#  proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+
+# controller service port name prefix to use for istio, defaults to tcp
+# global:
+#   controller:
+#     serviceAppProtocol: tcp

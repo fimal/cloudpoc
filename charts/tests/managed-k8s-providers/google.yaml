@@ -1,0 +1,45 @@
+# values file used to deploy in google cloud
+# prerequisites:
+  # 1. install google GKE kubernetes service
+  # 2. push images to gcr
+  # 3. set registry and version correctly
+  # 4. run helm install waas -n <<namespace>> ./waas -f tests/managed-k8s-providers/google.yaml --create-namespace
+
+global:
+  image:
+    registry: <gcr registry path>
+    version: :latest
+    imagePullSecret:
+  signaturesImage:
+    registry: <gcr registry path>
+    version: :latest
+    imagePullSecret:
+  elasticStorageManagement:
+      policy: poc
+  systemMode: inline
+
+waas-elasticsearch:
+  enabled: true
+  replicaCount: 1
+  processors: 1
+  persistentStorage:
+    type: google
+    size: 500Mi
+  # Minimum 2GB required.  
+  containers:
+    elasticsearch:
+      resources:
+        limits:
+          memory: 2G
+        requests:
+          memory: 2G  
+
+waas-filebeat:
+  enabled: true
+
+waas-logstash:
+  enabled: true
+  replicaCount: 1
+  jvmMemorySize: 2g
+  batchSize: 100
+  workers: 2

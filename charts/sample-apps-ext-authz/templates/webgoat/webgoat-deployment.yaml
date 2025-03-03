@@ -1,0 +1,25 @@
+{{- if .Values.webgoat }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-webgoat-deployment
+  labels:
+    waas.radware.com/sample: webgoat
+spec:
+  selector:
+    matchLabels:
+      app: sample-webgoat-container
+  template:
+    metadata:
+      labels:
+        app: sample-webgoat-container
+        waas.radware.com/protection: enabled
+    spec:
+      containers:
+        - image: webgoat/webgoat
+          imagePullPolicy: IfNotPresent
+          name: sample-webgoat
+          env:
+          - name: TZ
+            value: Asia/Jerusalem
+{{- end }}

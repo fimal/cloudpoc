@@ -1,0 +1,34 @@
+# Default values for grafana.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+## settings for specific containers
+containers:
+  grafana:
+    imagePath: reg.psradware.com/waas/waas-grafana:1.19.0
+    pullPolicy: Always
+  tester:
+    imagePath: reg.psradware.com/waas/waas-kubectl:1.19.0
+    pullPolicy: Always
+labels:
+  app.kubernetes.io/name: WAAS
+  app.kubernetes.io/instance: WAAS
+
+# Service types are:  LoadBalancer | NodePort | ClusterIP
+serviceType: 
+# if NodePort is used, please define nodePort number
+nodePort:
+# possible values inline, ext-authz
+systemMode: inline
+# configure prometheus and grafana with additional settings to collect
+# performance metrics from nodes/pods in the cluster
+# NOTE:
+#    A. this requires k8s metrics-server to be installed
+#    B. this gives prometheus a somewhat wider range of permissions
+gatherK8sPerformanceMetrics: false
+#
+nodeSelector: {}
+tolerations: []
+affinity: {}
+#
+adminUser: admin
+adminPassword: adminpass

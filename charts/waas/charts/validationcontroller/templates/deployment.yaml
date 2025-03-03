@@ -1,0 +1,113 @@
+{{- if .Values.enabled }}
+{{- $name := "validation-controller" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-{{ $name }}-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      configid: waas-{{ $name }}-container
+  template:
+    metadata:
+      labels:
+        configid: waas-{{ $name }}-container
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: validationcontroller
+        command: 
+          - /validator
+        args:
+        - --webhook-server-port={{ .Values.global.validationController.serviceTargetPort | default 4443 }}
+    {{- /* controller server TLS settings */}}
+    {{- with .Values.tls.server }}
+      {{- if eq .enabled true }}
+        - --validation-controller-tls=true
+        - --validation-controller-tls-crt-file={{ .certificate }}
+        - --validation-controller-tls-key-file={{ .key }}
+        {{- if eq .clientAuth true }}
+        - --validation-controller-tls-client-auth=true
+        {{- else }}
+        - --validation-controller-tls-client-auth=false
+        {{- end }}
+        {{- if eq .verify true }}
+        - --validation-controller-tls-ca-file={{ .ca }}
+        - --validation-controller-tls-verify=true
+        {{- else }}
+        - --validation-controller-tls-verify=false
+        {{- end }}
+      {{- else }}
+        - --validation-controller-tls=false
+      {{- end }}
+    {{- end }}
+        image: {{ include "waas.image.registry" . | coalesce .Values.containers.validationcontroller.registry }}/waas-validationcontroller{{ include "waas.image.version" . | coalesce .Values.containers.validationcontroller.version }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.global.validationController.serviceTargetPort | default 4443 }}
+          name: waas-wbhk-api
+        resources:
+          {{- toYaml .Values.containers.validationcontroller.resources | nindent 10 }}
+        {{- with .Values.containers.validationcontroller.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        volumeMounts:
+        {{- /* validation controller server TLS mounts */}}
+        {{- with .Values.tls.server }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 10 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+    {{- if .Values.extraContainers }}
+      {{- toYaml .Values.extraContainers | nindent 6 }}
+    {{- end }}
+    {{- if .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml .Values.extraInitContainers | nindent 6 }}
+    {{- end }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- /* events-fetcher server TLS volumes */}}
+      {{- with .Values.tls.server }}
+        {{- if eq .enabled true -}}
+          {{- with .volumes }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- /* extraVolumes */}}
+      {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
+      {{- end }}
+{{- end }}

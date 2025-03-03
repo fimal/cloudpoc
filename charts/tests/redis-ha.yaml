@@ -1,0 +1,23 @@
+waas-redis:
+  enabled: true
+  exposeMetrics: false
+  cluster:
+    masters: 1
+    replicas: 2
+  verbosity: disabled
+  persistentStorage:
+    data:
+      enabled: true
+      size: 3Gi
+      rdb: save 30 100 3600 1
+      aof:
+        appendonly: true
+        rewritePercentage: 100
+        rewriteMinSize: 10mb
+    cfg:
+      enabled: true
+      size: 10Mi
+
+global:
+  redis:
+    configuration: ha

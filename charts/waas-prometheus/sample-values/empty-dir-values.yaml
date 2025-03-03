@@ -1,0 +1,3 @@
+## use emptydir instead of persistent volumes
+persistentVolume:
+  enabled: false

@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: "0.1.0"
+description: Radware Sample Apps For External Authorization
+name: sample-apps-ext-authz
+version: 1.19.0
+icon: https://www.radware.com/RadwareNext/images/logo.svg

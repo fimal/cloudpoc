@@ -1,0 +1,18 @@
+global:
+  image:
+    registry: reg.psradware.com/waas
+    #make sure to override with the correct version or --set global.image.version=:$VERSION
+    version: :1.19.0
+    pullPolicy: Always
+    imagePullSecret:
+  signaturesImage:
+    registry: reg.psradware.com/waas
+    #make sure to override with the correct signature version or --set global.signaturesImage.version=:$SIG-VERSION
+    version: :499
+    imagePullSecret:
+  app:
+    httpbin:
+      image:
+        registry: reg.psradware.com/waas/waas-httpbin
+        version: master:latest
+        pullPolicy: Always

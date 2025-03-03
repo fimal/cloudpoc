@@ -1,0 +1,22 @@
+# Default values for sample-kwaf-config.
+# This is a YAML-formatted file.
+# Declare variables to be passed into templates.
+
+# configuration type, options: profile or mapping
+configType: mapping
+# configuration name, default: waas-ext-auth-mapping or waas-api-profile
+configName: waas-ext-auth-mapping
+
+# Default values for sample-apps-ext-authz
+bwapp: false
+hackazon: false
+bypass: true
+httpbin: true
+juiceShop: false
+nginx: false
+nginxh2c: true
+grpcx: false
+perfNginx: false
+webgoat: false
+vampi: false
+crapi: false

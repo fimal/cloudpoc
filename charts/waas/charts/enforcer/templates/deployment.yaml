@@ -1,0 +1,314 @@
+{{- if not (eq .Values.global.systemMode "inline") }}
+{{- if .Values.enabled }}
+{{- $data := dict "Values" .Values "Release" .Release "Sidecar" .Values.global.systemMode }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waas-enforcer-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      configid: waas-enforcer-container
+  template:
+    metadata:
+      labels:
+        configid: waas-enforcer-container
+        {{- include "waas.labels" . | indent 8}}
+      annotations:
+        {{- include "waas.annotations" . | indent 8}}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: enforcer
+          ports:
+            - name: stats
+              containerPort: 19010
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.enforcer.registry }}/waas-bootstrap{{ include "waas.image.version" . | coalesce .Values.containers.enforcer.version }}
+          {{- /* 
+            to run enforcer directly without the s6 process manager 
+            add the following to the container 
+            # command:
+            #   - /enforcer/current/bin/run-enforcer.sh
+            #   - enforcer
+          */}}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          # required to remove previous version command section
+          command: null
+          env:
+            - name: ENFORCER_OPT_L
+              value: {{ .Values.enforcerLogLevel | default "info" | quote }}
+            - name: ENFORCER_OPT_BASE_ID
+              value: {{ .Values.enforcerBaseId | default "321" | quote }}
+            - name: ENFORCER_OPT_CONCURRENCY
+              valueFrom:
+                resourceFieldRef:
+                  containerName: enforcer
+                  resource: limits.cpu
+            - name: ENFORCER_HEALTH_CHECK_PORT
+              value: {{ .Values.healthCheckPort | default 9919 | quote}}
+            - name: ENFORCER_RESPONSE_TRACKING_PORT
+              value: {{ .Values.responseTrackingPort | default 9929 | quote}}
+            - name: ENFORCER_STATSD_PORT
+              value: {{ .Values.statsdPort | default 8125 | quote }}
+            - name: ENFORCER_METRICS_PORT
+              value: {{ .Values.global.enforcer.ports.stats.targetPort | default 19010 | quote }}
+            - name: ENFORCER_CONTROLLER_ADDRESS
+              value: {{ if .Values.alternateControllerHost }}{{.Values.alternateControllerHost | quote }}{{ else }}waas-controller.{{.Release.Namespace}}.svc{{ end }}
+            - name: ENFORCER_CONTROLLER_PORT
+              value: {{ .Values.global.controller.servicePort | default 12121 | quote}}
+            - name: ENFORCER_RATE_LIMITER_ADDRESS
+              value: {{ if .Values.alternateTrackerHost }}{{ .Values.alternateTrackerHost | quote }}{{ else }}waas-rate-limiter.{{ .Release.Namespace}}.svc{{ end }}
+            - name: ENFORCER_RATE_LIMITER_PORT
+              value: {{ .Values.global.ratelimiter.servicePort | default 8081 | quote }}
+            - name: {{ if .Values.configType }}ENFORCER_{{ upper .Values.configType }}{{ else }}ENFORCER_PROFILE{{ end }}
+              value: {{ .Values.configNamespace | default .Release.Namespace }}/{{ .Values.configName | default "waas-api-profile" }}
+            - name: ENFORCER_SYSTEM_MODE_OVERRIDE
+              value: {{ .Values.systemModeOverride }}
+            - name: ENFORCER_TAG
+              value: enforcer
+            {{- if .Values.global.ipv6Support }}
+            - name: ENFORCER_STATSD_ADDR
+              value: "::1"
+            - name: ENFORCER_METRICS_HOST
+              value: "::1"
+            - name: ENFORCER_FRONTEND_ADDRESS
+              value: "::"
+            - name: ENFORCER_BACKEND_ADDRESS
+              value: "::1"
+            {{- else }}
+            - name: ENFORCER_STATSD_ADDR
+              value: "127.0.0.1"
+            - name: ENFORCER_METRICS_HOST
+              value: "127.0.0.1"
+            - name: ENFORCER_FRONTEND_ADDRESS
+              value: "0.0.0.0"
+            - name: ENFORCER_BACKEND_ADDRESS
+              value: "127.0.0.1"
+            {{- end }}
+            - name: ENFORCER_FRONTEND_PORT
+              value: {{ .Values.global.enforcer.ports.enforcerHttp.targetPort | default 9000 | quote }}
+            - name: ENFORCER_BACKEND_PORT
+              value: "80"
+        {{- /* controller client TLS settings */}}
+        {{- with .Values.tls.clients.controller }}
+          {{- if eq .enabled true }}
+            - name: ENFORCER_CONTROLLER_TLS
+              value: "true"
+            {{- if eq .clientAuth true }}
+            - name: ENFORCER_CONTROLLER_TLS_CLIENT_AUTH
+              value: "true"
+            - name: ENFORCER_CONTROLLER_TLS_CLIENT_CRT_FILE
+              value: {{ .clientCertificate }}
+            - name: ENFORCER_CONTROLLER_TLS_CLIENT_KEY_FILE
+              value: {{ .clientKey }}
+            {{- else }}
+            - name: ENFORCER_CONTROLLER_TLS_CLIENT_AUTH
+              value: "false"
+            {{- end }}
+            {{- if eq .verify true }}
+            - name: ENFORCER_CONTROLLER_TLS_CA_FILE
+              value: {{ .ca }}
+            {{- else }}
+            - name: ENFORCER_CONTROLLER_TLS_VERIFY
+              value: "false"
+            {{- end }}
+          {{- else }}
+            - name: ENFORCER_CONTROLLER_TLS
+              value: "false"
+          {{- end }}
+        {{- end }}
+        {{- /* rate limiter client TLS settings */}}
+        {{- with .Values.tls.clients.rateLimiter -}}
+          {{- if eq .enabled true }}
+            - name: ENFORCER_RATE_LIMITER_TLS
+              value: "true"
+            {{- if eq .clientAuth true }}
+            - name: ENFORCER_rate_limiter_tls_client_auth
+              value: "true"
+            - name: ENFORCER_RATE_LIMITER_TLS_CLIENT_CRT_FILE
+              value: {{ .clientCertificate }}
+            - name: ENFORCER_RATE_LIMITER_TLS_CLIENT_KEY_FILE
+              value: {{ .clientKey }}
+            {{- else }}
+            - name: ENFORCER_RATE_LIMITER_TLS_CLIENT_AUTH
+              value: "false"
+            {{- end }}
+            {{- if eq .verify true }}
+            - name: ENFORCER_RATE_LIMITER_TLS_CA_FILE
+              value: {{ .ca }}
+            {{- else }}
+            - name: ENFORCER_RATE_LIMITER_TLS_VERIFY
+              value: "false"
+            {{- end }}
+          {{- else }}
+            - name: ENFORCER_RATE_LIMITER_TLS
+              value: "false"
+          {{- end }}
+        {{- end }}
+        {{- if .Values.maxLatency }}
+            - name: MAX_LATENCY
+              value: {{ .Values.maxLatency | quote }}
+        {{- end }}
+        {{- /* enforcerExtraEnv will override (not overwrite) preset env vars*/}}
+        {{- range $key, $value := .Values.enforcerExtraEnv }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+        {{- end }}
+          resources:
+            {{- toYaml .Values.containers.enforcer.resources | nindent 12 }}
+          {{- with .Values.containers.enforcer.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /run
+              name: run-volume
+            - mountPath: /logs
+              name: logs-volume
+            - name: waas-current-enforcer-config
+              mountPath: /enforcer/current/etc/config
+            - name: waas-previous-enforcer-config
+              mountPath: /enforcer/{{.Values.previousEnforcerVersion}}/etc/config
+            - name: enrich-volume
+              mountPath: /opt/waas_aw_db
+        {{- /* clients TLS volume mounts */}}
+        {{- /* enforcer controller client TLS mounts */}}
+        {{- with .Values.tls.clients.controller }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- /* enforcer rate limiter client TLS mounts */}}
+        {{- with .Values.tls.clients.rateLimiter }}
+          {{- if eq .enabled true -}}
+            {{- with .mounts}}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+{{- if .Values.includeProbes }}
+          readinessProbe:
+            failureThreshold: 3
+            # in case this is applied over older version, remove the exec probe
+            # this makes patching older deployment with this template work
+            exec: null
+            httpGet:
+              path: /
+              port: {{ .Values.healthCheckPort | default 9919 }}
+              scheme: HTTP
+            periodSeconds: {{ .Values.probePeriodSeconds }}
+            successThreshold: 1
+            timeoutSeconds: 5
+          livenessProbe:
+            failureThreshold: 3
+            # in case this is applied over older version, remove the exec probe
+            # this makes patching older deployment with this template work
+            exec: null
+            httpGet:
+              path: /
+              port: {{ .Values.healthCheckPort | default 9919 }}
+              scheme: HTTP
+            periodSeconds: {{ .Values.probePeriodSeconds }}
+            successThreshold: 1
+            timeoutSeconds: 5
+{{- end }}
+        - name: logrotate
+          image: {{ include "waas.image.registry" . | coalesce .Values.containers.logrotate.registry }}/waas-logrotate{{ include "waas.image.version" . | coalesce .Values.containers.logrotate.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          env:
+            - name: ROTATE_PORT
+              value: "19000"
+            - name: ROTATE_SIZE
+              value: {{ .Values.rotate.size | quote}}
+            - name: ROTATE_NUM
+              value: {{ .Values.rotate.num | quote }}
+            - name: ROTATE_EVERY
+              value: {{ .Values.rotate.every | quote }}
+          resources:
+            {{- toYaml .Values.containers.logrotate.resources  | nindent 12 }}
+          {{- with .Values.containers.logrotate.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: logs-volume
+              mountPath: /logs
+        {{- include "waas.fluent-bit-container" . | indent 8 }}
+      initContainers:
+        - name: init-enrich
+          image: {{ include "waas.signatures-image.registry" . | coalesce .Values.containers.enrich.registry }}/waas-enrich{{ include "waas.signatures-image.version" . | coalesce .Values.containers.enrich.version }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          args:
+            - kopy
+            - /src/enforcer/waas_aw_db
+            - /enrich
+          resources:
+            {{- toYaml .Values.containers.enrich.resources  | nindent 12 }}
+          {{- with .Values.containers.enrich.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /enrich
+              name: enrich-volume
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.global.image.imagePullSecret }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+    {{- /* enforcer controller client TLS volumes */}}
+    {{- with .Values.tls.clients.controller }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* enforcer rate limiter client TLS volumes */}}
+    {{- with .Values.tls.clients.rateLimiter }}
+      {{- if eq .enabled true -}}
+        {{- with .volumes}}
+          {{- toYaml . | nindent 6 }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- /* fluentbit client volumes */}}
+      {{- include "waas.fluent-bit-volumes" . | indent 6 }}
+      - name: waas-current-enforcer-config
+        emptyDir:
+          {{- toYaml .Values.volumeCfg | nindent 10 }}
+      - name: waas-previous-enforcer-config
+        emptyDir:
+          {{- toYaml .Values.volumeCfg | nindent 10 }}
+      - name: enrich-volume
+        emptyDir:
+          {{- toYaml .Values.volumeEnrich | nindent 10 }}
+      - name: run-volume
+        emptyDir: 
+          sizeLimit: 10Mi
+{{- end }}
+{{- end }}

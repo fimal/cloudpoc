@@ -1,0 +1,5 @@
+{{- if .Values.enabled }}
+{{- $p := dict "weight" "40" }}
+{{- $d := merge . $p }}
+{{- template "waas.tester" $d }}
+{{- end }}

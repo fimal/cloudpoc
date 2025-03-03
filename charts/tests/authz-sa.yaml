@@ -1,0 +1,142 @@
+global:
+  systemMode: ext-authz
+  useNodePort: false
+  preserveJobs: false
+  controller:
+    serviceAppProtocol: grpc  
+  ratelimiter:
+    serviceAppProtocol: grpc
+  eventFetcher:
+    serviceAppProtocol: http
+  profilesCrud:
+    serviceAppProtocol: http
+  gui:
+    serviceAppProtocol: http
+  logstash:
+    serviceAppProtocol: http
+
+# TLS Settings - turn all TLS configurations other than
+# elasticsearch and validation controller off - 
+
+waas-rate-limiter:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      redis:
+        enabled: off
+        mounts:
+        volumes:
+      rateLimiter:
+        enabled: off
+        mounts:
+        volumes:
+      controller:
+        enabled: off
+        mounts:
+        volumes:
+
+waas-controller:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      fluentbit:
+        enabled: off
+        mounts:
+        volumes:
+      rateLimiter:
+        enabled: off
+        mounts:
+        volumes:
+  userIpHeaders: x-rdwr-requester-ip-header,xff
+  partialBodyHeaders: is-partial,x-envoy-auth-partial-body
+
+waas-enforcer:
+  configType: mapping
+  configName: waas-ext-auth-mapping
+  configNamespace: test
+  tls:
+    clients:
+      fluentbit:
+        enabled: off
+        mounts:
+        volumes:
+      rateLimiter:
+        enabled: off
+        mounts:
+        volumes:
+      controller:
+        enabled: off
+        mounts:
+        volumes:
+
+waas-events-fetcher:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      eventsFetcher:
+        enabled: false
+        mounts:
+        volumes:
+      elasticsearch:
+        verify: false
+
+waas-gui:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      eventsFetcher:
+        enabled: false
+        mounts:
+        volumes:
+      profiles:
+        enabled: false
+        mounts:
+        volumes:
+
+waas-logstash:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      elasticsearch:
+        verify: false
+        mounts: 
+        volumes: 
+
+waas-profiles-crud:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      profiles:
+        enabled: false
+        mounts:
+        volumes:
+
+waas-redis:
+  tls:
+    server:
+      enabled: false
+      mounts:
+      volumes:
+    clients:
+      redis:
+        enabled: false
+        mounts:
+        volumes:

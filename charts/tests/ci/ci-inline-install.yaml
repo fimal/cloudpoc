@@ -1,0 +1,41 @@
+global:
+  elasticStorageManagement:
+    policy: small
+  systemMode: inline
+  useNodePort: true
+
+waas-elasticsearch:
+  enabled: true
+  replicaCount: 1
+  processors: 1
+  persistentStorage:
+    size: 5Gi
+  # Minimum 2GB required.  
+  containers:
+    elasticsearch:
+      resources:
+        limits:
+          memory: 2G
+        requests:
+          memory: 2G
+
+waas-logstash:
+  enabled: true
+  replicaCount: 1
+  jvmMemorySize: 4g
+  batchSize: 100
+  workers: 2
+
+waas-controller:
+  enabled: true
+  userIpHeaders: x-rdwr-requester-ip-header
+  partialBodyHeaders: x-envoy-auth-partial-body,is-partial
+
+sample-app:
+  # allowed values: off, info, debug, trace
+  enforcerLogLevel: info
+  # Maximum allowed inspection time in MS `0` or missing is unlimited.
+  # maxLatency: 0
+  # to disable debug headers, remove the key
+  enforcerExtraEnv:
+    ADD_DEBUG_HEADERS: "1"

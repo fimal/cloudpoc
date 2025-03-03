@@ -1,0 +1,253 @@
+# configuration type, options: profile or mapping
+# if null, profile will be used
+configType:
+# configuration name, example: waas-ext-auth-mapping or waas-api-profile
+# if null, waas-api-profile will be used
+configName:
+# namespace for kwaf configuration to apply
+# if null, .Release.Namespace will be used
+configNamespace:
+
+image:
+  registry:
+  version:
+enabled: true
+nodePort: 12
+includeProbes: true
+replicaCount: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+# control the interval for enforcer exec type probes
+probePeriodSeconds: 10
+
+## logrotate configuration
+rotate:
+  # log file size to rotate when reached
+  size: 100M
+  # number of old log files to keep
+  num: 3
+  # rotation interval
+  every: 60
+
+# previous supported enforcer version
+# required for multi version support
+previousEnforcerVersion: v1.18
+
+# /etc/waas-config/ volume used to store bootstrap config file
+volumeCfg: {}
+# volume size limit for enrich volume
+volumeEnrich: {}
+
+# /logs volume used to store logs, logrotate and fluentbit configuration files
+volumeLogs: {}
+
+## settings for specific containers
+containers:
+  enforcer:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  logrotate:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  fluentbit:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  enrich:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+tls:
+  clients:
+    fluentbit:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/fluentbit/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/fluentbit/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/fluentbit/ca/ca.crt
+      # verify server upn connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name: 
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: flb-enforcer-client-volume
+          mountPath: /etc/fluentbit/client
+        - name: flb-ca-volume
+          mountPath: /etc/fluentbit/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: flb-enforcer-client-volume
+          secret:
+            secretName: waas-enforcer-client-secret
+        - name: flb-ca-volume
+          configMap:
+            name: waas-ca-config
+    controller:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/controller/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/controller/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/controller/ca/ca.crt
+      # verify server upn connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name: 
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: enforcer-client-volume
+          mountPath: /etc/controller/client
+        - name: ca-volume
+          mountPath: /etc/controller/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: enforcer-client-volume
+          secret:
+            secretName: waas-enforcer-client-secret
+        - name: ca-volume
+          configMap:
+            name: waas-ca-config
+    rateLimiter:
+      # client will connect to service over HTTP or HTTPS connections
+      # allowed valued: enabled, disabled
+      # default value: connect over HTTPS
+      enabled: true
+      # use client certificate when connecting to server
+      # allowed values: true, false
+      # default value: do not use client authentication
+      clientAuth: true
+      # certificate file location, mandatory
+      clientCertificate: /etc/rl/client/tls.crt
+      # key file location, mandatory
+      clientKey: /etc/rl/client/tls.key
+      # ca certificate file location, not mandatory
+      ca: /etc/rl/ca/ca.crt
+      # verify server upn connection
+      # allowed values: true, false
+      # default value: verify server identity
+      verify: true
+      # optionally, use following hostname for certificate verification
+      # alternate_server_name:
+      # get certificates and key from pod volumes into the server container
+      mounts:
+        - name: rl-enforcer-client-volume
+          mountPath: /etc/rl/client
+        - name: rl-ca-volume
+          mountPath: /etc/rl/ca
+      # volume mounts containing certificates and keys
+      volumes:
+        - name: rl-enforcer-client-volume
+          secret:
+            secretName: waas-rate-limiter-client-secret
+        - name: rl-ca-volume
+          configMap:
+            name: waas-ca-config
+
+# UDP port for stats collection between fluentbit and enforcer
+statsdPort: 8125
+
+# HTTP port for health check listener
+healthCheckPort: 9919
+
+# Maximum allowed inspection time in MS `0` or missing is unlimited.
+# maxLatency: 0
+
+# TCP port for response tracking proxy port
+responseTrackingPort: 9929
+
+# alternate addresses for controller, activity tracker and logstash
+# Controller
+# note that using alternate host replaces the host and namespace switches
+# alternateControllerHost: 127.0.0.1
+
+# Rate Limiter
+# note that using alternate host replaces the host and namespace switches
+# alternateTrackerHost: 127.0.0.1
+
+# Logstash (configured in fluentbit template)
+# note that using alternate host replaces the host and namespace switches
+# alternateLogstashHost: 127.0.0.1
+
+# uncomment to add extra Labels to enforcer
+# labels:
+
+# uncomment to add extra annotations to enforcer
+# extraAnnotations: 
+
+# enforcer related service port name prefixes to use for istio, defaults to http
+# global:
+#   enforcer:
+#       ports:
+#         enforcerHttp:
+#           appProtocol: http
+#         stats:
+#           appProtocol: http
+#     fluentbit:
+#       appProtocol: http
+
+# Override globally set system mode. possible values inherited, inline or ext-authz (default "inherited")
+systemModeOverride: inherited

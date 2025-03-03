@@ -1,0 +1,67 @@
+{{/*
+Generic pod ready tester
+*/}}
+{{- define "waas.tester" }}
+{{/* chop of waas- prefix from chart name */}}
+{{- $cn := .Chart.Name }}
+{{- if hasPrefix "waas-" $cn }}
+    {{- $lenCn := len $cn }}
+    {{- $cn = substr 5 $lenCn $cn }}
+{{- end }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "waas-{{$cn}}-test"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+    target: "waas-{{$cn}}-test"
+    role: waas-tester
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-weight": {{ default 30 .weight | quote }}
+    sidecar.istio.io/inject: "false"
+spec:
+  serviceAccountName: waas-preinstall-service-account
+  containers:
+    - name: tester
+      image: {{ .Values.global.image.registry }}/waas-kubectl{{ .Values.global.image.version }}
+      imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+      env:
+        - name: NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: POD
+          value: configid=waas-{{$cn}}-container
+      command: ["/bin/bash", "-c"]
+      args:
+        - |-
+          # make sure the pods exist
+          count=$(kubectl get pods -l $POD -n $NAMESPACE -o custom-columns=NAMEPSACE:metadata.namespace,POD:metadata.name,READY:status.containerStatuses[*].ready,STATUS:status.phase,MESSAGE:status.containerStatuses[*].state.waiting.message,REASON:status.containerStatuses[*].state.waiting.reason | wc -l)
+          if [ $count -eq 0 ]; then
+            echo "can't find pods with label $POD"
+            exit 1
+          fi
+
+          if kubectl get pods -l $POD -n $NAMESPACE -o custom-columns=NAMEPSACE:metadata.namespace,POD:metadata.name,READY:status.containerStatuses[*].ready,STATUS:status.phase,MESSAGE:status.containerStatuses[*].state.waiting.message,REASON:status.containerStatuses[*].state.waiting.reason | grep -q "false"; then
+            echo "not all pods labeled $POD are ready"
+            echo "#################################"
+            echo "pod status"
+            echo "#################################"
+            kubectl get pods -l $POD -n $NAMESPACE -o custom-columns=NAMEPSACE:metadata.namespace,POD:metadata.name,READY:status.containerStatuses[*].ready,STATUS:status.phase,MESSAGE:status.containerStatuses[*].state.waiting.message,REASON:status.containerStatuses[*].state.waiting.reason
+            echo "#################################"
+            echo "logs"
+            echo "#################################"
+            kubectl logs -l $POD -n $NAMESPACE
+            echo "#################################"
+            echo "description"
+            echo "#################################"
+            kubectl describe pods -l $POD -n $NAMESPACE
+            echo "#################################"
+            exit 1
+          else
+            echo "all pods labeled $POD are ready"
+            exit 0
+          fi
+  restartPolicy: Never
+{{- end }}

@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waas-logstash-custom-pipeline-config
+data:
+  genericSyslog: |-
+    input {
+        pipeline {
+            address => "genericSyslog"
+        }
+    }
+    filter {
+        if [logtype] != "Forensics" { drop {} }
+        mutate {
+            add_field => {
+                "message" => "%{waas_tag} %{attack_sev} %{@timestamp} xff: %{actorXffIp} | xff-header-name: %{actorXffHeader} | hostname: %{sourceHostname} | url: %{trafficUri} | contentType: %{contentType} | userAgent: %{userAgent} | referer: %{referer} | contentLength: %{contentLength} | eventId: %{trafficTransId} | module: %{eventModule} | attack: %{attack} | title: %{title} | description: %{description} | profile: %{waas_profile} | mapping: %{mappingId} | policy: %{policyName} | classifier: %{policyClsId} | protectionId: %{policyProtectionId} | action: %{action} | "
+            }
+        }
+    }
+    output {
+        udp {
+            host => "127.0.0.1"
+            port => 514
+            codec => plain { format => "%{message}" }
+        }
+        # stdout {  }
+    }
+  httpEndpoint: |-
+    input {
+      pipeline {
+        address => "httpEndpoint"
+      }
+    }
+    filter {
+      if [logtype] not in ["Forensics", "Access", "RequestData"] {
+        drop { }
+      }
+      ruby {
+        code => '
+            event.to_hash.each { |k, v|
+                unless [ "@timestamp", "@version", "host", "message", "logtype" ].include?(k)
+                    event.set("[data][#{k}]", v)
+                    event.remove(k)
+                end
+            }
+        '
+      }
+      mutate {
+        add_field => {
+          "schema_type" => "json"
+          "[timestamp][event]" => "%{@timestamp}"
+          "[timestamp][enforcer]" => "%{@timestamp}"
+          "[sourcetype]" => "example_kwaf_logs"
+        }
+        rename => {
+          "waas_profile" => "[data][source]"
+          "sourceHostname" => "[data][hostname]"
+        }
+      }
+    }
+    output {
+      if "Forensics" == [logtype] {
+        http {
+          format => "json"
+          http_method => "post"
+          url => "http://utility-app-event-counter-service.radware:5000/forensics"
+        }
+      } else if "Access" == [logtype] {
+        http {
+          format => "json"
+          http_method => "post"
+          url => "http://utility-app-event-counter-service.radware:5000/access"
+        }
+      } else if "RequestData" == [logtype] {
+        http {
+          format => "json"
+          http_method => "post"
+          url => "http://utility-app-event-counter-service.radware:5000/rdata"
+        }
+      }
+    }

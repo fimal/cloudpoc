@@ -1,0 +1,17 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+{{- if eq .Values.persistentStorage.type "azure" }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: waas-elasticsearch-azure-disk
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+provisioner: kubernetes.io/azure-disk
+reclaimPolicy: Retain
+parameters:
+  skuName: Standard_LRS
+volumeBindingMode: {{ .Values.volumeBindingMode }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,22 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: waas-redis-headless
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  selector:
+    configid: waas-redis-container
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+  - port: 16379
+    targetPort: 16379
+    protocol: TCP
+    name: {{ .Values.global.redis.ports.gossipAppProtocol | default "tcp" }}-gossip
+{{- end }}

@@ -1,0 +1,6 @@
+# For AWS DO NOT FORGET TO TURN ON PROXY PROTOCOL in TARGETS GROUPS ATTRIBUTE
+# ServiceType: ClusterIP, NodePort, LoadBalancer
+serviceType: LoadBalancer
+# Cloud Environement: aws, empty for local
+cloudEnv: aws
+debug: false

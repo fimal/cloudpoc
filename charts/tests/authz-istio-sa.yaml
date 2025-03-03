@@ -1,0 +1,7 @@
+waas-controller:
+  extraAnnotations: 
+    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+
+waas-enforcer:
+  extraAnnotations: 
+    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'

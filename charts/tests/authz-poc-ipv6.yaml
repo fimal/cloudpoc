@@ -1,0 +1,4 @@
+waas-enforcer:
+  alternateControllerHost: ::1
+  alternateTrackerHost: ::1
+  alternateLogstashHost: ::1

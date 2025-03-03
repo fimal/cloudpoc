@@ -1,0 +1,3 @@
+waas-controller:
+  accessLogHeadersToAdd: x-custom-a,x-custom-b
+  securityLogHeadersToAdd: x-sec-a,x-sec-b

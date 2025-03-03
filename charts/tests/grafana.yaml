@@ -1,0 +1,11 @@
+containers:
+  grafana:
+    imagePath: reg.psradware.com/waas/waas-grafana:1.19.0
+    pullPolicy: Always
+  tester:
+    imagePath: reg.psradware.com/waas/waas-kubectl:1.19.0
+    pullPolicy: Always
+# Service types are:  LoadBalancer | NodePort | ClusterIP
+serviceType: NodePort
+# if NodePort is used, please define nodePort number
+nodePort: 31010

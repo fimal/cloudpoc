@@ -1,0 +1,26 @@
+{{- if and .Values.bwapp (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  bwapp-sample
+  labels:
+    release: waas
+  namespace: {{ .Release.Namespace }}
+spec:
+  policies:
+  - name: bwapp-policy
+    operatorEmail: support@radware.com
+    protections:
+    - id: bwapp
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: bwapp
+      hostname: '*'
+      id: bwapp-sample
+      path:
+        operand: Prefix
+        value: /
+{{- end }}

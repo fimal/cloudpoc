@@ -1,0 +1,88 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: waas-license-meter-job
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  #run job every hour at *:00
+  schedule: "0 * * * *"
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            {{- if .Values.extraAnnotations }}
+              {{- toYaml .Values.extraAnnotations | nindent 12}}
+            {{- end }}
+            {{- /* itio will make other containers start only once istio pilot-agent is ready */}}
+            proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+        spec:
+          containers:
+          - name: license-meter
+            image: {{ include "waas.image.registry" . | coalesce .Values.containers.licenseMeter.registry }}/waas-license-meter{{ include "waas.image.version" . | coalesce .Values.containers.licenseMeter.version }}
+            imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+            env:
+            - name: ES_SERVICE
+              value: "https://waas-elasticsearch-exposed.{{ .Release.Namespace }}.svc:{{.Values.global.elasticsearch.serviceExposed.servicePort | default 443}}"
+            {{- with .Values.tls.clients.licenseMeter  }}
+            - name: ES_CLIENT_TLS_VERIFY
+            {{- if .enabled }}
+              value: "True"
+            - name: ES_CLIENT_TLS_CA_FILE
+              value: {{ tpl .ca $ | quote }}
+            {{- else }}
+              value: "False"
+            {{- end -}}
+            {{- end }}
+            - name: ES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: user
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: waas-esauth-secret
+                  key: password
+            {{- if .Values.containers.licenseMeter.resources }}
+            resources:
+                {{- toYaml .Values.containers.licenseMeter.resources | nindent 14 }}
+              {{- end }}
+            {{- with .Values.containers.licenseMeter.securityContext }}
+            securityContext:
+                {{- toYaml . | nindent 14 }}
+              {{- end }}
+            volumeMounts:
+              {{- with .Values.tls.clients.licenseMeter }}
+                {{- if .enabled }}
+                  {{- tpl .mounts $ | nindent 14 }}
+                {{- end }}
+              {{- end }}
+          volumes:
+            {{- with .Values.tls.clients.licenseMeter }}
+              {{- if .enabled }}
+                {{- toYaml .volumes | nindent 12 }}
+              {{- end }}
+            {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          restartPolicy: Never
+{{- end }}

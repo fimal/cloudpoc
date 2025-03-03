@@ -1,0 +1,126 @@
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  waas-api-profile
+  labels:
+    release: waas
+spec:
+  policies:
+  - name: apiPolicy
+    operatorEmail: support@radware.com
+    protections:
+    - id: nginx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: nginxh2c
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: bypass
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: httpbin
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: grpcx
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: bwapp
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: hackazon
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    - id: juice-shop
+      expressions:
+        opMode: Active
+      signatures:
+        opMode: Active
+        advExcludes:
+        - ruleIDs:
+          - 9281
+          zone: uri
+    - id: webgoat
+      signatures:
+        opMode: Passive
+      expressions:
+        opMode: Passive
+    - id: vampi
+      signatures:
+        opMode: Active
+      expressions:
+        opMode: Active
+    classifiers:
+    - protectionId: juice-shop
+      hostname: juice-shop.kwaf-demo.tes*
+      id: juice-shop-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: nginx
+      hostname: 'nginx.kwaf-demo.tes*'
+      id: nginx-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: nginxh2c
+      hostname: 'nginxh2c.kwaf-demo.tes*'
+      id: nginxh2c-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: bypass
+      hostname: 'bypass.kwaf-demo.tes*'
+      id: bypass-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: bwapp
+      hostname: 'bwapp.kwaf-demo.tes*'
+      id: bwapp-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: httpbin
+      hostname: 'httpbin.kwaf-demo.tes*'
+      id: httpbin-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: hackazon
+      hostname: 'hackazon.kwaf-demo.tes*'
+      id: hackazon-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: grpcx
+      hostname: 'grpcx.kwaf-demo.tes*'
+      id: grpcx-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: webgoat
+      hostname: 'webgoat.kwaf-demo.tes*'
+      id: webgoat-sample
+      path:
+        operand: Prefix
+        value: /
+    - protectionId: vampi
+      hostname: 'vampi.kwaf-demo.tes*'
+      id: vampi-sample
+      path:
+        operand: Prefix
+        value: /

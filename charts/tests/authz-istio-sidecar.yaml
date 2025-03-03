@@ -1,0 +1,15 @@
+global:
+  logstash:
+    servicePort: 2020
+    serviceTargetPort: 2020
+waas-controller:
+  extraAnnotations: 
+    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'
+
+waas-enforcer:
+  enabled: false
+  alternateControllerHost: 127.0.0.1
+  alternateTrackerHost: 127.0.0.1
+  alternateLogstashHost: 127.0.0.1
+  extraAnnotations:
+    proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'

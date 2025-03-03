@@ -1,0 +1,29 @@
+{{- if not (eq .Values.global.systemMode "inline") }}
+{{- if .Values.enabled }}
+{{- if not .Values.configName }}
+apiVersion: waas.radware.com/v1beta1
+kind: Profile
+metadata:
+  name:  waas-api-profile
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+  policies:
+  - name: apiPolicy
+    operatorEmail: support@radware.com
+    protections:
+    - id: api-protection
+    classifiers:
+    - protectionId: api-protection
+      hostname: '*'
+      id: default
+      path:
+        operand: Prefix
+        value: /
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,19 @@
+{{- if and .Values.enabled .Values.global.rbac}}
+{{ $mode := include "waas.redis.mode" .}}
+{{ $sentinelConnect := .Values.global.redis.sentinelConnect }}
+  {{- if and (eq $mode "ha") (not $sentinelConnect) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: waas-redis-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "patch"]
+  {{- end }}
+{{- end }}

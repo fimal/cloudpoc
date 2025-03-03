@@ -1,0 +1,116 @@
+# whether this chart is to be installed
+enabled: true
+
+containers:
+  prometheus:
+    imagePath:
+    pullPolicy: Always
+  pushgateway:
+    imagePath: prom/pushgateway
+    pullPolicy: Always
+
+serviceType: NodePort
+promNodePort: 31007
+pushNodePort: 31019
+
+rbac:
+  create: true
+
+# configure prometheus and grafana with additional settings to collect
+# performance metrics from nodes/pods in the cluster
+# NOTE:
+#    A. this requires k8s metrics-server to be installed
+#    B. this gives prometheus a somewhat wider range of permissions
+gatherK8sPerformanceMetrics: false
+#
+
+## Node labels for Prometheus server pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+## Node tolerations for server scheduling to nodes with taints
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+tolerations: []
+  # - key: "key"
+  #   operator: "Equal|Exists"
+  #   value: "value"
+  #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+
+# number of replicas to run
+replicaCount: 1
+
+## Prometheus server pod termination grace period
+terminationGracePeriodSeconds: 300
+
+## Optional Security context to be added to server pods
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+
+## Prometheus data retention period (default if not specified is 15 days)
+##
+retention: "3d"
+
+persistentVolume:
+  ## If true, Prometheus server will create/use a Persistent Volume Claim
+  ## If false, use emptyDir
+  ##
+  enabled: false
+  ## Prometheus server data Persistent Volume access modes
+  ## Must match those of existing PV or dynamic provisioner
+  ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  accessModes:
+    - ReadWriteOnce
+  ## Prometheus server data Persistent Volume annotations
+  ##
+  annotations: {}
+  ## Prometheus server data Persistent Volume existing claim name
+  ## Requires server.persistentVolume.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  existingClaim: ""
+  ## Prometheus server data Persistent Volume mount root path
+  ##
+  mountPath: /data
+  ## Prometheus server data Persistent Volume size
+  ##
+  size: 8Gi
+  ## Prometheus server data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+
+  ## Subdirectory of Prometheus server data Persistent Volume to mount
+  ## Useful if the volume's root directory is not empty
+  ##
+  subPath: ""
+
+## Path to a configuration file on prometheus server container FS
+configPath: /etc/config/prometheus.yml
+
+scrape:
+  # How frequently to scrape targets by default
+  interval: 10s
+  # How long until a scrape request times out
+  timeout: 5s
+
+
+## settings for specific containers
+containers:
+  prometheus:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true

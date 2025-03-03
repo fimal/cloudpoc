@@ -1,0 +1,87 @@
+# global prometheus configuration
+global:
+  ## How frequently to scrape targets by default
+  scrape_interval: SCRAPE_INTERVAL
+  ## How long until a scrape request times out
+  scrape_timeout: TIMEOUT_INTERVAL
+  ## How frequently to evaluate rules
+  evaluation_interval: 5m
+
+scrape_configs:
+- job_name: waas-enforcer
+  metrics_path: /stats/prometheus
+  scheme: http
+  kubernetes_sd_configs:
+  - role: endpoints
+  relabel_configs:
+    ## suffix after label_ is the label name
+  - source_labels: [__meta_kubernetes_service_label_waas_prometheus_service]
+    separator: ;
+    ## regex in the label value
+    regex: monitor
+    replacement: $1
+    action: keep
+  - source_labels: [__meta_kubernetes_endpoint_port_name]
+    separator: ;
+    regex: stats
+    replacement: $1
+    action: keep
+- job_name: waas-fluentbit-containers
+  metrics_path: /api/v1/metrics/prometheus
+  scheme: http
+  kubernetes_sd_configs:
+  - role: endpoints
+  relabel_configs:
+    ## suffix after label_ is the label name
+  - source_labels: [__meta_kubernetes_service_label_waas_prometheus_service]
+    separator: ;
+    ## regex in the label value
+    regex: monitor
+    replacement: $1
+    action: keep
+  - source_labels: [__meta_kubernetes_endpoint_port_name]
+    separator: ;
+    regex: fb-stats
+    replacement: $1
+    action: keep
+- job_name: waas-redis-containers
+  metrics_path: /metrics
+  scheme: http
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+    ## suffix after label_ is the label name
+  - source_labels: [__meta_kubernetes_pod_label_waas_prometheus_service]
+    separator: ;
+    ## regex in the label value
+    regex: monitor
+    replacement: $1
+    action: keep
+  - source_labels: [__meta_kubernetes_pod_container_port_name]
+    separator: ;
+    regex: stats
+    replacement: $1
+    action: keep
+- job_name: waas-rate-limiter-containers
+  metrics_path: /metrics
+  scheme: http
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+    ## suffix after label_ is the label name
+  - source_labels: [__meta_kubernetes_pod_label_waas_prometheus_service]
+    separator: ;
+    ## regex in the label value
+    regex: monitor
+    replacement: $1
+    action: keep
+  - source_labels: [__meta_kubernetes_pod_container_port_name]
+    separator: ;
+    regex: rl-stats
+    replacement: $1
+    action: keep
+- job_name: prometheus-push-gateway
+  honor_labels: true
+  static_configs:
+    - targets:
+      - localhost:9091

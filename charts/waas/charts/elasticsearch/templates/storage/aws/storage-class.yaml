@@ -1,0 +1,23 @@
+{{- if and .Values.enabled (default .Values.global.elasticsearch.enabled true) }}
+{{- if eq .Values.persistentStorage.type "aws" }}
+{{- /* storgae class to use when installing in EKS */}}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: waas-elasticsearch-aws-disk
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+{{- if ge (int .Capabilities.KubeVersion.Minor) 23 }}
+provisioner: ebs.csi.aws.com
+{{- else }}
+provisioner: kubernetes.io/aws-ebs
+{{- end }}
+reclaimPolicy: Retain
+parameters:
+  type: gp3
+  fsType: ext4
+volumeBindingMode: {{ .Values.volumeBindingMode }}
+{{- end }}
+{{- end }}

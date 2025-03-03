@@ -1,0 +1,134 @@
+# mapping sample
+{{- if (eq .Values.configType "mapping") }}
+apiVersion: waas.radware.com/v1beta1
+kind: Mapping
+metadata:
+  name: {{ .Values.configName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: waas
+spec:
+  operatorEmail: support@somewhere.com
+  maps:
+  {{- if .Values.juiceShop }}
+  - domains:
+    - juice-shop.kwaf-demo.test
+    - juice-shop.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: juice-shop-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.bwapp }}
+  - domains:
+    - bwapp.kwaf-demo.test
+    - bwapp.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: bwapp-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.hackazon }}
+  - domains:
+    - hackazon.kwaf-demo.test
+    - hackazon.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: hackazon-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.httpbin }}
+  - domains:
+    - httpbin.kwaf-demo.test
+    - httpbin.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: waas-api-profile
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.bypass }}
+  - domains:
+    - bypass.kwaf-demo.test
+    - bypass.kwaf-demo.test:*
+    - bypass.kwaf-demo.test-shadow
+    - bypass.kwaf-demo.test-shadow:*
+    operatorEmail: ""
+    profile:
+      name: bypass-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.perfNginx }}
+  - domains:
+    - '*.kwaf-demo.test'
+    - '*.kwaf-demo.test:*'
+    operatorEmail: ""
+    profile:
+      name: perf-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if or .Values.nginx .Values.nginxh2c }}
+  - domains:
+    - nginx.kwaf-demo.test
+    - nginx.kwaf-demo.test:*
+    - app1.kwaf-demo.test
+    - app1.kwaf-demo.test:*
+    - nginxh2c.kwaf-demo.test
+    - nginxh2c.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: nginx-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.grpcx }}
+  - domains:
+    - grpcx.kwaf-demo.test
+    - grpcx.kwaf-demo.test:*
+    profile:
+     # TODO: Change profile
+      name: grpcx-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.webgoat }}
+  - domains:
+    - webgoat.kwaf-demo.test
+    - webgoat.kwaf-demo.test:*
+    - webwolf.kwaf-demo.test
+    - webwolf.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: webgoat-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.vampi }}
+  - domains:
+    - vampi.kwaf-demo.test
+    - vampi.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: vampi-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+  {{- if .Values.crapi }}
+  - domains:
+    - crapi-web.kwaf-demo.test
+    - crapi-web.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: crapi-web-sample
+      namespace: {{ .Release.Namespace }}
+  - domains:
+    - crapi-mail.kwaf-demo.test
+    - crapi-mail.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: crapi-mail-sample
+      namespace: {{ .Release.Namespace }}
+  - domains:
+    - crapi-identity.kwaf-demo.test
+    - crapi-identity.kwaf-demo.test:*
+    operatorEmail: ""
+    profile:
+      name: crapi-identity-sample
+      namespace: {{ .Release.Namespace }}
+  {{- end }}
+{{- end }}

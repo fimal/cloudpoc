@@ -1,0 +1,173 @@
+{{- if .Values.enabled }}
+apiVersion: waas.radware.com/v1beta1
+kind: PatternGroup
+metadata:
+  name: rfi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "waas.labels" . | indent 4 }}
+  annotations:
+    {{- include "waas.annotations" . | indent 4 }}
+spec:
+    - id: rfi1
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]http\:\/\/'
+        isRegex: true
+    - id: rfi2
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^http\:\/\/
+        isRegex: true
+    - id: rfi3
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]https\:\/\/'
+        isRegex: true
+    - id: rfi4
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^https\:\/\/
+        isRegex: true
+    - id: rfi5
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]ftp\:\/\/'
+        isRegex: true
+    - id: rfi6
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^ftp\:\/\/
+        isRegex: true
+    - id: rfi7
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]dict\:\/\/'
+        isRegex: true
+    - id: rfi8
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^dict\:\/\/
+        isRegex: true
+    - id: rfi9
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]gopher\:\/\/'
+        isRegex: true
+    - id: rfi10
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^gopher\:\/\/
+        isRegex: true
+    - id: rfi11
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]tftp\:\/\/'
+        isRegex: true
+    - id: rfi12
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^tftp\:\/\/
+        isRegex: true
+    - id: rfi13
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]ldap\:\/\/'
+        isRegex: true
+    - id: rfi14
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^ldap\:\/\/
+        isRegex: true
+    - id: rfi15
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]data\:\/\/'
+        isRegex: true
+    - id: rfi16
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^data\:\/\/
+        isRegex: true
+    - id: rfi17
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]sftp\:\/\/'
+        isRegex: true
+    - id: rfi18
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^sftp\:\/\/
+        isRegex: true
+    - id: rfi19
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''&]php\:\/\/'
+        isRegex: true
+    - id: rfi20
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^php\:\/\/
+        isRegex: true
+    - id: rfi21
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: <!\[cdata\[<esi:include src="http\]\]>
+        isRegex: true
+    - id: rfi22
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: '[\s,;|"''=&]ssh2\:\/\/'
+        isRegex: true
+    - id: rfi23
+      description: RFI violation found
+      expectedLocations:
+        - parameters
+      patternProp: 
+        pattern: ^ssh2\:\/\/
+        isRegex: true
+{{- end }}

@@ -1,0 +1,17 @@
+{{- if .Values.vampi }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-vampi-service
+  labels:
+    waas.radware.com/sample: vampi
+spec:
+  selector:
+    app: sample-vampi-container
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 5000
+      name: http
+      protocol: TCP
+{{- end }}

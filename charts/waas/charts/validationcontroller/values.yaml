@@ -1,0 +1,119 @@
+image:
+  registry:
+  version:
+enabled: true
+nodePort: 16
+replicaCount: 1
+nodeSelector: {}
+tolerations: []
+affinity: {}
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+serviceAccountName: ""
+
+# webhook settings:
+# timeout in seconds
+timeout: 30
+
+## settings for specific containers
+containers:
+  validationcontroller:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  webhookInstall:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+  webhookDelete:
+    registry:
+    version:
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - all
+      runAsUser: 65534
+      runAsGroup: 65534
+      readOnlyRootFilesystem: true
+
+tls:
+  server:
+    # servers will accept HTTPS or HTTP connections
+    # allowed values: enabled, disabled
+    # default value: accept HTTPS connection
+    enabled: true
+    # client authentication using client certificate may be required
+    # allowed values: true, false
+    # default value: do not require client authentication
+    clientAuth: false
+    # certificate file location, required
+    certificate: /etc/validation-controller/server/tls.crt
+    # key file location, required
+    key: /etc/validation-controller/server/tls.key
+    # ca certificate file location, not required if clientAuth=false
+    ca: /etc/validation-controller/ca/ca.crt
+    # verify server upon connection
+    # allowed values: true, false
+    # default value: do not verify server identity
+    verify: false
+    # get certificates and key from pod volumes into the server container
+    mounts:
+      - name: validation-controller-server-volume
+        mountPath: /etc/validation-controller/server
+      - name: ca-volume
+        mountPath: /etc/validation-controller/ca
+    # volume mounts containing certificates and keys
+    volumes:
+      - name: validation-controller-server-volume
+        secret:
+          secretName: waas-validation-controller-server-secret
+      - name: ca-volume
+        configMap:
+          name: waas-ca-config
+  webhook:
+    # provide the caBundle to use with validating webhook configurations
+    # if not provided no caBundle will be defined in the webhook
+      caBundle: 
+
+# extra settings
+# ---------------------------
+# add extra labels
+# labels:
+
+# add extra annotations
+# extraAnnotations:
+
+# add extra containers
+# extraContainers:
+
+# add extra init containers
+# extraInitContainers:
+
+# extra volumes
+# extraVolumes: 
+
+# Validation controller port name prefix to use for istio, defaults to https
+# global:
+#   validationController:
+#     serviceAppProtocol: https

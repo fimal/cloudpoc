@@ -1,0 +1,99 @@
+{
+  "index_patterns": [
+    "waas-metrics-enforcer*"
+  ],
+  "template": {
+    "settings": {
+      {{- if .Values.global.elasticStorageManagement.enabled }}
+      "lifecycle": {
+        "name": "waas_ilm_metrics",
+        "rollover_alias": "waas-metrics-enforcer"
+      },
+      {{- end}}
+      {{- if .Values.global.elasticsearch.setElasticTimestamp }}
+      "final_pipeline": "waas-ingest-timestamp",
+      {{- end }}
+      "number_of_shards": 6,
+      "number_of_replicas": 1,
+      "refresh_interval": "5s",
+      "translog": {
+        "durability": "async",
+        "sync_interval": "5s"
+      },
+      "analysis": {
+        "normalizer": {
+          "lowercase_normalizer": {
+            "filter": [
+              "lowercase"
+            ],
+            "type": "custom",
+            "char_filter": []
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "@date": {
+          "type": "date"
+        },
+        "logtype": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "metric": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "name": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "namespace": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "profile_name": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "policy": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "classifier": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "protection": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "interval": {
+          "type": "keyword",
+          "doc_values": true,
+          "normalizer": "lowercase_normalizer"
+        },
+        "total_count": {
+          "type": "integer",
+          "doc_values": true
+        },
+        "value": {
+          "type": "double",
+          "doc_values": true
+        }
+      }
+    }
+  }
+}

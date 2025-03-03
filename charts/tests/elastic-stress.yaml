@@ -1,0 +1,24 @@
+global:
+  kibanaCredEnabled: true
+
+waas-elasticsearch:
+  enabled: true
+  replicaCount: 1
+  processors: 1
+  persistentStorage:
+    type: none
+    size: 50Gi
+  containers:
+    elasticsearch:
+      resources:
+        limits:
+          memory: 16G
+        requests:
+          memory: 16G
+
+waas-logstash:
+  enabled: true
+  replicaCount: 1
+  jvmMemorySize: 4g
+  batchSize: 100
+  workers: 2
