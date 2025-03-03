@@ -7,7 +7,7 @@ juiceShop: false
 nginx: false
 nginxh2c: true
 grpcx: false
-perfNginx: false
+perfNginx: true
 webgoat: false
 vampi: false
 

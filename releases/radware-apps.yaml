@@ -1,0 +1,41 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: radware-apps
+  namespace: flux-system
+spec:
+  chart:
+    spec:
+      chart: ./charts/sample-apps-ext-authz
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+  interval: 1m0s
+  targetNamespace: radware
+  values:
+    apps:
+      grpcx:
+        image:
+          pullPolicy: IfNotPresent
+          registry: reg.psradware.com/waas
+          version: /waas-grpc-server/master:latest
+      httpbin:
+        image:
+          pullPolicy: IfNotPresent
+          registry: reg.psradware.com/waas
+          version: /waas-httpbin/master:latest
+    bwapp: false
+    bypass: false
+    grpcx: false
+    hackazon: false
+    httpbin: true
+    juiceShop: false
+    nginx: false
+    nginxh2c: true
+    nodeSelector: {}
+    perfNginx: true
+    serviceType: NodePort
+    vampi: false
+    webgoat: false
